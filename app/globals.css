@@ -1,26 +1,671 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design System ─────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base:      #07070f;
+  --bg-surface:   #0e0e1a;
+  --bg-card:      #12121f;
+  --bg-elevated:  #1a1a2e;
+  --border:       rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.16);
+
+  --text-primary:  #f0f0ff;
+  --text-secondary: #8888aa;
+  --text-muted:    #4a4a6a;
+
+  --accent:       #6366f1;
+  --accent-glow:  rgba(99,102,241,0.3);
+  --cyan:         #22d3ee;
+  --cyan-glow:    rgba(34,211,238,0.2);
+
+  /* Model colors */
+  --openai:       #10b981;
+  --openai-bg:    rgba(16,185,129,0.1);
+  --anthropic:    #f97316;
+  --anthropic-bg: rgba(249,115,22,0.1);
+  --groq:         #a855f7;
+  --groq-bg:      rgba(168,85,247,0.1);
+  --google:       #3b82f6;
+  --google-bg:    rgba(59,130,246,0.1);
+  --custom:       #22d3ee;
+  --custom-bg:    rgba(34,211,238,0.1);
+  --kserve:       #ec4899;
+  --kserve-bg:    rgba(236,72,153,0.1);
+  --judge:        #f59e0b;
+  --judge-bg:     rgba(245,158,11,0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Base ───────────────────────────────────────────────────── */
+html, body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Typography ─────────────────────────────────────────────── */
+.font-display { font-family: 'Syne', sans-serif; }
+.font-mono    { font-family: 'JetBrains Mono', monospace; }
+
+/* ── Glass Card ─────────────────────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.glass:hover {
+  border-color: var(--border-hover);
+}
+.glass-dark {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Glow Effects ───────────────────────────────────────────── */
+.glow-accent { box-shadow: 0 0 20px var(--accent-glow); }
+.glow-cyan   { box-shadow: 0 0 20px var(--cyan-glow); }
+.glow-judge  { box-shadow: 0 0 24px rgba(245,158,11,0.4); }
+
+/* ── Gradient Text ──────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1 0%, #22d3ee 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-warm {
+  background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 4px 25px rgba(99,102,241,0.5);
+  transform: translateY(-1px);
+}
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-judge {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: #0a0a0f;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(245,158,11,0.3);
+}
+.btn-judge:hover:not(:disabled) {
+  box-shadow: 0 4px 25px rgba(245,158,11,0.5);
+  transform: translateY(-1px);
+}
+.btn-judge:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-ghost:hover { border-color: var(--border-hover); color: var(--text-primary); background: rgba(255,255,255,0.04); }
+
+/* ── Inputs ─────────────────────────────────────────────────── */
+.input-dark {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input-dark::placeholder { color: var(--text-muted); }
+.input-dark:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.select-dark {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+}
+.select-dark:focus { outline: none; border-color: var(--accent); }
+option { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* ── Model Color Badges ─────────────────────────────────────── */
+.badge-openai    { background: var(--openai-bg);    color: var(--openai);    border: 1px solid rgba(16,185,129,0.2);  }
+.badge-anthropic { background: var(--anthropic-bg); color: var(--anthropic); border: 1px solid rgba(249,115,22,0.2);  }
+.badge-groq      { background: var(--groq-bg);      color: var(--groq);      border: 1px solid rgba(168,85,247,0.2);  }
+.badge-google    { background: var(--google-bg);     color: var(--google);    border: 1px solid rgba(59,130,246,0.2);  }
+.badge-custom    { background: var(--custom-bg);     color: var(--custom);    border: 1px solid rgba(34,211,238,0.2);  }
+.badge-kserve    { background: var(--kserve-bg);     color: var(--kserve);    border: 1px solid rgba(236,72,153,0.2);  }
+
+/* Panel top accent lines */
+.panel-openai    { border-top: 2px solid var(--openai); }
+.panel-anthropic { border-top: 2px solid var(--anthropic); }
+.panel-groq      { border-top: 2px solid var(--groq); }
+.panel-google    { border-top: 2px solid var(--google); }
+
+/* ── Status Dot Animations ──────────────────────────────────── */
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(16,185,129,0); }
+}
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50%       { box-shadow: 0 0 0 4px rgba(239,68,68,0); }
+}
+.status-online { animation: pulse-green 2s infinite; }
+.status-error  { animation: pulse-red  1.5s infinite; }
+
+/* ── Tabs ───────────────────────────────────────────────────── */
+.tab-bar { border-bottom: 1px solid var(--border); }
+.tab {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  padding: 10px 18px;
+  font-size: 13px;
+}
+.tab:hover { color: var(--text-secondary); }
+.tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Chat Bubbles ───────────────────────────────────────────── */
+.bubble-user {
+  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1));
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 16px 16px 4px 16px;
+}
+.bubble-assistant {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px 16px 16px 4px;
+}
+
+/* ── Score Bar Animation ────────────────────────────────────── */
+@keyframes score-fill {
+  from { width: 0; }
+}
+.score-bar { animation: score-fill 0.8s ease-out forwards; }
+
+/* ── Header Grid Pattern ────────────────────────────────────── */
+.header-grid {
+  background-image:
+    linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── Noise Overlay ──────────────────────────────────────────── */
+.noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Stat Cards ─────────────────────────────────────────────── */
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: var(--border-hover); }
+.stat-number {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ── Judge Modal ────────────────────────────────────────────── */
+.judge-modal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 40px rgba(245,158,11,0.1);
+}
+
+/* ── Pool Indicator ─────────────────────────────────────────── */
+.pool-bar {
+  background: linear-gradient(90deg, rgba(245,158,11,0.08), rgba(249,115,22,0.05));
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 12px;
+}
+
+/* ── Prose dark ─────────────────────────────────────────────── */
+.prose-dark { color: var(--text-secondary); }
+.prose-dark h1, .prose-dark h2, .prose-dark h3 { color: var(--text-primary); }
+.prose-dark code {
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+}
+.prose-dark pre {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.prose-dark table { width: 100%; border-collapse: collapse; }
+.prose-dark th { background: rgba(255,255,255,0.05); color: var(--text-primary); padding: 8px; border: 1px solid var(--border); }
+.prose-dark td { padding: 8px; border: 1px solid var(--border); color: var(--text-secondary); }
+.prose-dark a { color: var(--cyan); text-decoration: none; }
+.prose-dark a:hover { text-decoration: underline; }
+.prose-dark strong { color: var(--text-primary); font-weight: 600; }
+
+/* ── Thinking animation ─────────────────────────────────────── */
+@keyframes thinking {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.1); }
+}
+.thinking-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: thinking 1.2s ease-in-out infinite;
+}
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Range input ────────────────────────────────────────────── */
+input[type=range] {
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* ── Checkbox ───────────────────────────────────────────────── */
+input[type=checkbox] {
+  accent-color: var(--accent);
+  width: 14px; height: 14px;
+}
+
+/* ── Panel Provider Borders (extra specificity) ─────────────── */
+.panel-top-openai    { border-top: 2px solid var(--openai) !important; }
+.panel-top-anthropic { border-top: 2px solid var(--anthropic) !important; }
+.panel-top-groq      { border-top: 2px solid var(--groq) !important; }
+.panel-top-google    { border-top: 2px solid var(--google) !important; }
+
+/* ── Prose overrides for dark mode ──────────────────────────── */
+.prose-dark p    { color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+.prose-dark li   { color: var(--text-secondary); font-size: 13px; }
+.prose-dark ul   { padding-left: 1.2em; }
+.prose-dark ol   { padding-left: 1.2em; }
+.prose-dark blockquote {
+  border-left: 2px solid var(--accent);
+  padding-left: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ── Table polish ────────────────────────────────────────────── */
+.judge-table th, .judge-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+}
+.judge-table tr:last-child td { border-bottom: none; }
+.judge-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* ── Smooth page transitions ─────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeIn 0.3s ease-out; }
+
+/* ── Number glow for scores ──────────────────────────────────── */
+.score-high   { color: var(--openai); text-shadow: 0 0 12px rgba(16,185,129,0.5); }
+.score-medium { color: var(--judge);  text-shadow: 0 0 12px rgba(245,158,11,0.4); }
+.score-low    { color: #ef4444;       text-shadow: 0 0 12px rgba(239,68,68,0.4); }
+
+/* ── Thinking dots bigger ────────────────────────────────────── */
+.thinking-dot {
+  width: 7px; height: 7px;
+}
+
+/* ── Provider badges sharper ─────────────────────────────────── */
+.badge-openai, .badge-anthropic, .badge-groq,
+.badge-google, .badge-custom, .badge-kserve {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ── Selection style ─────────────────────────────────────────── */
+::selection {
+  background: var(--accent-glow);
+  color: var(--text-primary);
+}
+
+/* ── Tab fixes ───────────────────────────────────────────────── */
+.tab {
+  position: relative;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text-secondary); }
+
+/* Active tab gets full white text — override everything */
+.tab[style*="fontWeight: 600"],
+.tab[style*="fontWeight:600"] {
+  color: #ffffff !important;
+}
+
+/* ── Input text always visible ───────────────────────────────── */
+.input-dark,
+.input-dark:focus,
+.select-dark,
+.select-dark:focus {
+  color: var(--text-primary) !important;
+}
+.input-dark::placeholder { color: var(--text-muted) !important; opacity: 1; }
+
+/* ── Panel empty state line ──────────────────────────────────── */
+.panel-glow-line {
+  height: 1px;
+  width: 40px;
+  opacity: 0.6;
+}
+
+/* ── Prose body text — strong contrast ───────────────────────── */
+.prose-dark, .prose-dark p, .prose-dark li, .prose-dark span {
+  color: #c8c8e0 !important;
+}
+.prose-dark strong { color: #f0f0ff !important; }
+.prose-dark h1, .prose-dark h2, .prose-dark h3,
+.prose-dark h4, .prose-dark h5, .prose-dark h6 {
+  color: #f0f0ff !important;
+  font-family: 'Syne', sans-serif;
+  margin-top: 0.75em;
+  margin-bottom: 0.4em;
+}
+.prose-dark code {
+  color: var(--cyan) !important;
+  background: rgba(34, 211, 238, 0.08) !important;
+  border: 1px solid rgba(34, 211, 238, 0.15);
+  font-size: 0.82em;
+}
+.prose-dark pre {
+  background: rgba(0,0,0,0.5) !important;
+  border: 1px solid var(--border);
+}
+.prose-dark pre code {
+  color: #c8e6c9 !important;
+  background: transparent !important;
+  border: none;
+}
+
+/* ── Metrics row ─────────────────────────────────────────────── */
+.metric-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+
+/* ── Config sidebar labels ───────────────────────────────────── */
+.config-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ── Panel overflow fix ──────────────────────────────────────── */
+.panels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* ── Scrollable message area ─────────────────────────────────── */
+.message-area {
+  scrollbar-gutter: stable;
+}
+
+/* ── Cap prose heading sizes inside chat panels ──────────────── */
+.prose-dark h1 { font-size: 1.1rem !important; line-height: 1.4; margin-top: 0.8em; }
+.prose-dark h2 { font-size: 1rem !important;   line-height: 1.4; margin-top: 0.7em; }
+.prose-dark h3 { font-size: 0.95rem !important; line-height: 1.4; margin-top: 0.6em; }
+.prose-dark h4, .prose-dark h5, .prose-dark h6 { font-size: 0.875rem !important; }
+
+/* ── Prevent panel content overflow ─────────────────────────── */
+.panels-grid > * { overflow: hidden; min-width: 0; }
+.message-area * { overflow-wrap: break-word; word-break: break-word; max-width: 100%; }
+.prose-dark pre { overflow-x: auto; max-width: 100%; }
+.prose-dark table { display: block; overflow-x: auto; max-width: 100%; }
+.prose-dark img { max-width: 100%; }
+
+/* ── Tab active state — stronger contrast ────────────────────── */
+.tab-bar .tab { padding: 8px 16px; font-size: 13px; }
+
+/* ── Panel grid — absolute equal columns ─────────────────────── */
+/* Belt AND suspenders approach */
+.panels-grid,
+[style*="gridTemplateColumns"] {
+  width: 100%;
+}
+[style*="gridTemplateColumns"] > * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+/* All text content inside panels wraps */
+[style*="gridTemplateColumns"] p,
+[style*="gridTemplateColumns"] span,
+[style*="gridTemplateColumns"] div {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   READABILITY OVERHAUL
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Base font size bump ──────────────────────────────────────── */
+body { font-size: 14px; }
+
+/* ── Tab active state — pill background ─────────────────────────*/
+.tab { font-size: 13px; padding: 8px 16px; min-height: 40px; display: flex; align-items: center; gap: 6px; }
+
+/* ── Prose inside chat panels — bigger, more readable ───────────*/
+.prose-dark p    { font-size: 14px !important; line-height: 1.75 !important; color: #d0d0e8 !important; margin-bottom: 0.6em; }
+.prose-dark li   { font-size: 14px !important; line-height: 1.7  !important; color: #d0d0e8 !important; margin-bottom: 0.2em; }
+.prose-dark h1   { font-size: 1.15rem !important; }
+.prose-dark h2   { font-size: 1.05rem !important; margin-top: 1em !important; }
+.prose-dark h3   { font-size: 0.975rem !important; }
+
+/* ── GFM Tables inside chat ──────────────────────────────────── */
+.prose-dark table {
+  font-size: 12px !important;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  display: table !important;
+}
+.prose-dark th {
+  background: rgba(99,102,241,0.12) !important;
+  color: var(--text-primary) !important;
+  padding: 6px 10px !important;
+  border: 1px solid var(--border) !important;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.prose-dark td {
+  color: #d0d0e8 !important;
+  padding: 5px 10px !important;
+  border: 1px solid var(--border) !important;
+  vertical-align: top;
+}
+.prose-dark tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+.prose-dark tr:hover td { background: rgba(99,102,241,0.05); }
+
+/* ── Code blocks — proper sizing ────────────────────────────────*/
+.prose-dark code {
+  font-size: 12px !important;
+  padding: 2px 6px !important;
+}
+.prose-dark pre { padding: 14px !important; }
+.prose-dark pre code { font-size: 12px !important; }
+
+/* ── Input/select text — always readable ────────────────────────*/
+.input-dark, .select-dark { font-size: 13px !important; }
+
+/* ── Config sidebar labels ───────────────────────────────────── */
+[class*="text-[10px]"] { font-size: 11px; } /* global minimum */
+
+/* ── Judge result table ──────────────────────────────────────── */
+.judge-result-table th,
+.judge-result-table td { padding: 10px 14px; font-size: 13px; }
+
+/* ── Score comparison bars ───────────────────────────────────── */
+.score-bar-label { font-size: 13px; }
+
+/* ── Empty panel state ───────────────────────────────────────── */
+.panel-empty-name { font-size: 14px !important; }
+
+/* ── Message metrics row ─────────────────────────────────────── */
+.metric-pill { font-size: 11px !important; }
+
+/* ── Pool bar ────────────────────────────────────────────────── */
+.pool-bar span { font-size: 12px; }
+
+/* ── Thinking dots — better centered ────────────────────────────*/
+.thinking-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ── Scrollbars thicker for usability ───────────────────────────*/
+::-webkit-scrollbar { width: 6px; height: 6px; }
+
+/* ── KServe response — don't collapse pipe tables to text ───────*/
+.prose-dark p:has(> strong) + p { /* adjacent paragraphs with bold */ }
+
+/* ── Judge tab left column ───────────────────────────────────── */
+.judge-config-panel { min-width: 400px; }
+
+/* ── Action buttons in panels — don't overlap content ───────────*/
+.panel-actions {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-elevated);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── KeyValueEditor inputs — force dark styling ──────────────── */
+.flex.gap-1.mb-1 input,
+.flex.gap-1 input[placeholder="Header name"],
+.flex.gap-1 input[placeholder="Header value"],
+.flex.gap-1 input[placeholder="Field name"],
+.flex.gap-1 input[placeholder="Value (JSON or string)"],
+.flex.gap-1 input[placeholder="Key"],
+.flex.gap-1 input[placeholder="Value"],
+input[placeholder="Header name"],
+input[placeholder="Header value"],
+input[placeholder="Value (JSON or string)"],
+input[placeholder="Field name"] {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+}
+
+input[placeholder="Header name"]::placeholder,
+input[placeholder="Header value"]::placeholder,
+input[placeholder="Field name"]::placeholder,
+input[placeholder="Value (JSON or string)"]::placeholder {
+  color: var(--text-muted) !important;
+}
+
+input[placeholder="Header name"]:focus,
+input[placeholder="Header value"]:focus,
+input[placeholder="Field name"]:focus,
+input[placeholder="Value (JSON or string)"]:focus {
+  outline: none !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+}
+
+/* ── Custom Endpoint + KServe — proper 2-col layout ────────────*/
+/* Chat response area full width */
+.flex.glass-dark.rounded-2xl[style*="flex:1"] { width: 100%; }
+
+/* Response text in custom endpoint bubbles */
+.bubble-assistant .prose-dark p { font-size: 14px !important; color: #d0d0e8 !important; }
+.bubble-user .prose-dark p      { font-size: 14px !important; color: #c0c8f0 !important; }
+
+/* Endpoint header label truncation */
+.endpoint-url-label {
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Config sidebar inner scroll */
+.config-inner {
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
 }

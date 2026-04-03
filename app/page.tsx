@@ -1,65 +1,223 @@
-import Image from "next/image";
+'use client';
+
+import { useRef, useState, useEffect, useCallback } from 'react';
+import type { ModelStatus, HistoryEntry, PoolEntry, ActiveTab } from '../types/evalify-types';
+import { STORAGE_KEY_CONFIGS, MAX_RECENT_QUERIES } from '../config/evalify-constants';
+import { KSERVE_PRESETS } from '../config/evalify-kserve-presets';
+
+import { AddToPoolButton, saveRecentQuery, loadJudgeHistory } from './components/shared';
+import { ChatPanel }           from './components/ChatPanel';
+import { CustomEndpointTab }   from './components/CustomEndpointTab';
+import { KServeTab }           from './components/KServeTab';
+import { StatsPanel }          from './components/StatsPanel';
+import { JudgeTab }            from './components/JudgeTab';
+import { QueryInput }          from './components/QueryInput';
 
 export default function Home() {
+  const [activeTab, setActiveTab]               = useState<ActiveTab>('compare');
+  const [input, setInput]                       = useState('');
+  const [submitTrigger, setSubmitTrigger]       = useState(0);
+  const [history, setHistory]                   = useState<HistoryEntry[]>([]);
+  const [modelStatuses, setModelStatuses]       = useState<Record<string, ModelStatus>>({});
+  const [pool, setPool]                         = useState<PoolEntry[]>([]);
+  const [broadcastTrigger, setBroadcastTrigger] = useState(0);
+  const [broadcastInput, setBroadcastInput]     = useState('');
+  const [clearAllTrigger, setClearAllTrigger]   = useState(0);
+  const clearFnsRef   = useRef<Record<string, () => void>>({});
+  const registerClear = useCallback((id: string, fn: () => void) => { clearFnsRef.current[id] = fn; }, []);
+  const lastInput     = useRef('');
+
+  const onMetric         = (e: HistoryEntry) => setHistory(prev => [...prev, e]);
+  const onScore          = (id: string, s: 'up' | 'down') => setHistory(prev => prev.map(h => h.id === id ? { ...h, score: s } : h));
+  const onModelStatus    = (model: string, status: ModelStatus) => setModelStatuses(prev => ({ ...prev, [model]: status }));
+  const onAddToPool      = useCallback((e: PoolEntry) => setPool(prev => [...prev, e]), []);
+  const onRemoveFromPool = useCallback((id: string) => setPool(prev => prev.filter(p => p.id !== id)), []);
+
+  const handleSubmit = () => {
+    if (!input.trim()) return;
+    saveRecentQuery(input.trim());
+    lastInput.current = input;
+    setSubmitTrigger(t => t + 1);
+    setInput('');
+  };
+
+  const exportCSV = () => {
+    const headers = ['Time','Panel','Question','Model','Level','Response Time (ms)','Tokens','Cost ($)','Score'];
+    const rows = history.map(h => [
+      h.timestamp, h.panel,
+      `"${(h.question ?? '').replace(/"/g, '""')}"`,
+      h.model, h.level,
+      h.responseTime ?? '', h.tokens ?? '',
+      h.cost != null ? h.cost.toFixed(5) : '',
+      h.score ?? '',
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `evalify-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="max-w-[1600px] mx-auto p-6 space-y-6" style={{minHeight:"100vh"}}>
+      <div className="fixed inset-0 header-grid opacity-30 pointer-events-none" style={{zIndex:0}} />
+      <div className="relative" style={{zIndex:1}}>
+
+        {/* ── Header ─────────────────────────────────────────── */}
+        <div className="flex items-center justify-between flex-wrap gap-3 pb-6" style={{borderBottom:"1px solid var(--border)"}}>
+          <div>
+            <h1 className="font-display text-4xl font-bold gradient-text tracking-tight">⚡ Evalify</h1>
+            <p className="text-sm mt-2 flex items-center gap-2" style={{color:'var(--text-muted)'}}>
+              <span className="badge-openai   text-[10px] px-2 py-0.5 rounded-full">Compare LLMs</span>
+              <span className="badge-custom   text-[10px] px-2 py-0.5 rounded-full">Custom Endpoints</span>
+              <span className="badge-kserve   text-[10px] px-2 py-0.5 rounded-full">KServe v2</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full" style={{background:"rgba(245,158,11,0.1)",color:"#f59e0b",border:"1px solid rgba(245,158,11,0.2)"}}>⚖️ BYOJ Judge</span>
+            </p>
+          </div>
+          {history.length > 0 && (
+            <button onClick={exportCSV} className="btn-ghost flex items-center gap-2 px-3 py-2 text-sm">⬇️ Export CSV</button>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* ── Judge pool bar ──────────────────────────────────── */}
+        {pool.length > 0 && (
+          <div className="pool-bar flex items-center gap-2 px-4 py-2">
+            <span className="text-xs font-medium font-display" style={{color:"#f59e0b"}}>⚖️ Judge Pool:</span>
+            <div className="flex gap-2 flex-wrap flex-1">
+              {pool.map(p => (
+                <span key={p.id} className="text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1"
+                  style={{background:"rgba(245,158,11,0.15)",color:"#f59e0b",border:"1px solid rgba(245,158,11,0.2)"}}>
+                  {p.label}
+                  <button onClick={() => onRemoveFromPool(p.id)} className="text-yellow-500 hover:text-yellow-800 ml-1">✕</button>
+                </span>
+              ))}
+            </div>
+            {pool.length >= 2 && (
+              <button onClick={() => setActiveTab('judge')} className="btn-judge text-xs px-3 py-1 whitespace-nowrap">
+                ⚖️ Run Judge
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Tabs ───────────────────────────────────────────── */}
+        <div className="flex gap-1 tab-bar" style={{padding:"4px 0"}}>
+          <button onClick={() => setActiveTab('compare')} className="tab"
+            style={activeTab==='compare' ? {color:"#fff",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            ⚡ Compare Models
+          </button>
+          <button onClick={() => setActiveTab('openai')} className="tab"
+            style={activeTab==='openai' ? {color:"#fff",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            🔌 Custom Endpoint
+          </button>
+          <button onClick={() => setActiveTab('kserve')} className="tab"
+            style={activeTab==='kserve' ? {color:"#fff",borderBottomColor:"var(--kserve)",fontWeight:700,background:"rgba(236,72,153,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            🧬 KServe v2 <span className="ml-1 text-[10px] badge-kserve px-1.5 py-0.5 rounded-full font-mono">{KSERVE_PRESETS.length}</span>
+          </button>
+          <button onClick={() => setActiveTab('judge')} className="tab"
+            style={activeTab==='judge' ? {color:"var(--judge)",borderBottomColor:"var(--judge)",fontWeight:700,background:"rgba(245,158,11,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            ⚖️ Judge {pool.length > 0 && (
+              <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-mono"
+                style={{background:"rgba(245,158,11,0.15)",color:"var(--judge)"}}>{pool.length}</span>
+            )}
+          </button>
+          <button onClick={() => setActiveTab('stats')} className="tab"
+            style={activeTab==='stats' ? {color:"var(--accent)",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            📊 Stats {history.length > 0 && (
+              <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-mono"
+                style={{background:"rgba(99,102,241,0.15)",color:"var(--accent)"}}>{history.length}</span>
+            )}
+          </button>
         </div>
-      </main>
-    </div>
+
+        {/* ── Compare tab ────────────────────────────────────── */}
+        <div style={{display: activeTab === 'compare' ? 'block' : 'none'}}>
+          <div className="grid grid-cols-4 gap-4">
+            {(['A','B','C','D'] as const).map(p => (
+              <ChatPanel key={p} panelId={p}
+                sharedInput={lastInput.current}
+                submitTrigger={submitTrigger}
+                onMetric={onMetric} onScore={onScore}
+                pool={pool} onAddToPool={onAddToPool} onRemoveFromPool={onRemoveFromPool}
+                modelStatuses={modelStatuses} onModelStatus={onModelStatus}
+                clearTrigger={clearAllTrigger}
+                onRegisterClear={registerClear} />
+            ))}
+          </div>
+          <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex gap-2 mt-4 items-center">
+            <QueryInput value={input} onChange={setInput} onSubmit={handleSubmit}
+              placeholder="Ask all four panels simultaneously... (Enter to submit, 💡 for sample questions)" />
+            <button type="submit" disabled={!input.trim()} className="btn-primary px-5 py-3 text-sm whitespace-nowrap">
+              Ask All
+            </button>
+            <button type="button" disabled={!input.trim()}
+              onClick={() => {
+                if (!input.trim()) return;
+                saveRecentQuery(input.trim());
+                lastInput.current = input;
+                setBroadcastInput(input);
+                setBroadcastTrigger(t => t + 1);
+                setSubmitTrigger(t => t + 1);
+                setInput('');
+              }}
+              title="Ask all panels + Custom Endpoint + KServe simultaneously"
+              className="btn-ghost px-3 py-3 text-sm whitespace-nowrap"
+              style={{borderColor:"rgba(34,211,238,0.3)",color:"var(--cyan)"}}>
+              📡 All
+            </button>
+            <button type="button"
+              onClick={() => {
+                Object.values(clearFnsRef.current).forEach(fn => fn());
+                setClearAllTrigger(t => t + 1);
+              }}
+              title="Clear all 4 panels"
+              className="btn-ghost px-3 py-3 text-sm whitespace-nowrap"
+              style={{borderColor:"rgba(239,68,68,0.2)",color:"#ef4444"}}>
+              🗑 Clear
+            </button>
+          </form>
+        </div>
+
+        {/* ── Custom Endpoint tab ─────────────────────────────── */}
+        <div style={{display: activeTab === 'openai' ? 'block' : 'none'}}>
+          <CustomEndpointTab onMetric={onMetric} onScore={onScore}
+            pool={pool} onAddToPool={onAddToPool} onRemoveFromPool={onRemoveFromPool}
+            broadcastInput={broadcastInput} broadcastTrigger={broadcastTrigger} />
+        </div>
+
+        {/* ── KServe tab ──────────────────────────────────────── */}
+        <div style={{display: activeTab === 'kserve' ? 'block' : 'none'}}>
+          <KServeTab onMetric={onMetric} onScore={onScore}
+            pool={pool} onAddToPool={onAddToPool} onRemoveFromPool={onRemoveFromPool}
+            broadcastInput={broadcastInput} broadcastTrigger={broadcastTrigger} />
+        </div>
+
+        {/* ── Judge tab ───────────────────────────────────────── */}
+        <div style={{display: activeTab === 'judge' ? 'block' : 'none'}}>
+          <JudgeTab pool={pool} allHistory={history}
+            onRemoveFromPool={onRemoveFromPool} onNavigate={setActiveTab} />
+        </div>
+
+        {/* ── Stats tab ───────────────────────────────────────── */}
+        <div style={{display: activeTab === 'stats' ? 'block' : 'none'}}>
+          <div className="glass-dark rounded-2xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display font-bold text-2xl gradient-text">📊 Evaluation History</h2>
+              {history.length > 0 && (
+                <button onClick={exportCSV} className="btn-ghost flex items-center gap-2 px-3 py-2 text-sm"
+                  style={{borderColor:"rgba(16,185,129,0.3)",color:"var(--openai)"}}>
+                  ⬇️ Export CSV
+                </button>
+              )}
+            </div>
+            <StatsPanel history={history} onClearHistory={() => setHistory([])} />
+          </div>
+        </div>
+
+      </div>
+    </main>
   );
 }
