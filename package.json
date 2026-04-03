@@ -43,5 +43,8 @@
     "ts-jest": "^29.2.0",
     "typescript": "^5",
     "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
