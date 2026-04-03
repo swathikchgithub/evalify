@@ -84,13 +84,14 @@ function avg(nums: (number | null | undefined)[]): number | null {
 }
 
 // ── ChatPanel ─────────────────────────────────────────────────
-export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onScore: onScoreParent, pool, onAddToPool, onRemoveFromPool, modelStatuses, onModelStatus, clearTrigger = 0, onRegisterClear }: {
+export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onScore: onScoreParent, pool, onAddToPool, onRemoveFromPool, modelStatuses, onModelStatus, clearTrigger = 0, onRegisterClear, isActive = true }: {
   panelId: string; sharedInput: string; submitTrigger: number;
   onMetric: (e: HistoryEntry) => void; onScore: (id: string, s: 'up' | 'down') => void;
   pool: PoolEntry[]; onAddToPool: (e: PoolEntry) => void; onRemoveFromPool: (id: string) => void;
   modelStatuses: Record<string, ModelStatus>; onModelStatus: (model: string, status: ModelStatus) => void;
   clearTrigger?: number;
   onRegisterClear?: (panelId: string, fn: () => void) => void;
+  isActive?: boolean;
 }) {
   const [model, setModel] = useState(panelId === 'A' ? 'gpt-4o-mini' : panelId === 'B' ? 'claude-haiku-4-5-20251001' : panelId === 'C' ? 'llama-3.3-70b-versatile' : 'gemini-2.5-flash');
   const [complexity, setComplexity] = useState(1); // Default Age 5 — simplest, most approachable
@@ -159,7 +160,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
 
   const provider = getProviderInfo(model);
   return (
-    <div className="flex flex-col glass-dark rounded-xl sm:rounded-2xl overflow-hidden" style={{borderTop:`2px solid ${provider.color}`, minWidth:0, width:"100%", overflow:"hidden"}}>
+    <div className="flex flex-col glass-dark rounded-xl sm:rounded-2xl overflow-hidden transition-opacity" style={{borderTop:`2px solid ${provider.color}`, minWidth:0, width:"100%", overflow:"hidden", opacity: isActive ? 1 : 0.4}}>
       <div className="p-4 flex flex-col gap-2" style={{background:"var(--bg-elevated)",borderBottom:"1px solid var(--border)"}}>
         {/* Model name + provider badge */}
         <div className="flex items-center gap-2 mb-1">

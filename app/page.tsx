@@ -26,6 +26,11 @@ export default function Home() {
   const clearFnsRef   = useRef<Record<string, () => void>>({});
   const registerClear = useCallback((id: string, fn: () => void) => { clearFnsRef.current[id] = fn; }, []);
   const lastInput     = useRef('');
+  const [activePanels, setActivePanels] = useState<Record<string, boolean>>({
+    A: true, B: true, C: true, D: true,
+  });
+  const togglePanel = (id: string) =>
+    setActivePanels(prev => ({ ...prev, [id]: !prev[id] }));
 
   const onMetric         = (e: HistoryEntry) => setHistory(prev => [...prev, e]);
   const onScore          = (id: string, s: 'up' | 'down') => setHistory(prev => prev.map(h => h.id === id ? { ...h, score: s } : h));
@@ -139,15 +144,49 @@ export default function Home() {
             {(['A','B','C','D'] as const).map(p => (
               <ChatPanel key={p} panelId={p}
                 sharedInput={lastInput.current}
-                submitTrigger={submitTrigger}
+                submitTrigger={activePanels[p] ? submitTrigger : 0}
                 onMetric={onMetric} onScore={onScore}
                 pool={pool} onAddToPool={onAddToPool} onRemoveFromPool={onRemoveFromPool}
                 modelStatuses={modelStatuses} onModelStatus={onModelStatus}
                 clearTrigger={clearAllTrigger}
-                onRegisterClear={registerClear} />
+                onRegisterClear={registerClear}
+                isActive={activePanels[p]} />
             ))}
           </div>
-          <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex flex-wrap gap-2 mt-4 items-center">
+          {/* Panel selector */}
+        <div className="flex flex-wrap gap-2 mt-3 items-center">
+          <span className="text-[11px] font-medium" style={{color:"var(--text-muted)"}}>Send to:</span>
+          {(['A','B','C','D'] as const).map(p => {
+            const labels: Record<string, string> = { A:'GPT-4o', B:'Claude', C:'Llama', D:'Gemini' };
+            const colors: Record<string, string> = { A:'var(--openai)', B:'var(--anthropic)', C:'var(--groq)', D:'var(--google)' };
+            return (
+              <button key={p} type="button"
+                onClick={() => togglePanel(p)}
+                className="text-[11px] px-3 py-1 rounded-full border transition-all"
+                style={{
+                  background: activePanels[p] ? `${colors[p]}22` : 'transparent',
+                  borderColor: activePanels[p] ? colors[p] : 'var(--border)',
+                  color: activePanels[p] ? colors[p] : 'var(--text-muted)',
+                  opacity: activePanels[p] ? 1 : 0.5,
+                }}>
+                {activePanels[p] ? '✓' : '○'} {labels[p]}
+              </button>
+            );
+          })}
+          <button type="button"
+            onClick={() => setActivePanels({ A:true, B:true, C:true, D:true })}
+            className="text-[10px] px-2 py-0.5 rounded border"
+            style={{color:"var(--text-muted)", borderColor:"var(--border)"}}>
+            All
+          </button>
+          <button type="button"
+            onClick={() => setActivePanels({ A:false, B:false, C:false, D:false })}
+            className="text-[10px] px-2 py-0.5 rounded border"
+            style={{color:"var(--text-muted)", borderColor:"var(--border)"}}>
+            None
+          </button>
+        </div>
+        <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex flex-wrap gap-2 mt-2 items-center">
             <QueryInput value={input} onChange={setInput} onSubmit={handleSubmit}
               placeholder="Ask all four panels simultaneously... (Enter to submit, 💡 for sample questions)" />
             <button type="submit" disabled={!input.trim()} className="btn-primary px-5 py-3 text-sm whitespace-nowrap">

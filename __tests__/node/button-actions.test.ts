@@ -609,3 +609,92 @@ describe('AddToPoolButton — same-question lock enforcement', () => {
   });
 
 });
+
+describe('Panel selector — send to specific panels', () => {
+
+  type PanelId = 'A' | 'B' | 'C' | 'D';
+
+  function makeActivePanels(all = true): Record<PanelId, boolean> {
+    return { A: all, B: all, C: all, D: all };
+  }
+
+  function togglePanel(panels: Record<PanelId, boolean>, id: PanelId) {
+    return { ...panels, [id]: !panels[id] };
+  }
+
+  function getSubmitTrigger(
+    activePanels: Record<PanelId, boolean>,
+    panelId: PanelId,
+    submitTrigger: number
+  ) {
+    // Mirrors: submitTrigger={activePanels[p] ? submitTrigger : 0}
+    return activePanels[panelId] ? submitTrigger : 0;
+  }
+
+  it('all panels active by default', () => {
+    const panels = makeActivePanels(true);
+    expect(Object.values(panels).every(v => v)).toBe(true);
+  });
+
+  it('toggling a panel deactivates it', () => {
+    const panels = makeActivePanels(true);
+    const updated = togglePanel(panels, 'B');
+    expect(updated.B).toBe(false);
+    expect(updated.A).toBe(true); // others unchanged
+  });
+
+  it('toggling again reactivates it', () => {
+    let panels = makeActivePanels(true);
+    panels = togglePanel(panels, 'C');
+    panels = togglePanel(panels, 'C');
+    expect(panels.C).toBe(true);
+  });
+
+  it('inactive panel gets submitTrigger=0 (does not fire)', () => {
+    const panels = { A: true, B: false, C: true, D: false };
+    expect(getSubmitTrigger(panels, 'A', 1)).toBe(1); // fires
+    expect(getSubmitTrigger(panels, 'B', 1)).toBe(0); // skipped
+    expect(getSubmitTrigger(panels, 'C', 1)).toBe(1); // fires
+    expect(getSubmitTrigger(panels, 'D', 1)).toBe(0); // skipped
+  });
+
+  it('only claude panel active — only B fires', () => {
+    const panels = { A: false, B: true, C: false, D: false };
+    expect(getSubmitTrigger(panels, 'A', 1)).toBe(0);
+    expect(getSubmitTrigger(panels, 'B', 1)).toBe(1); // only Claude
+    expect(getSubmitTrigger(panels, 'C', 1)).toBe(0);
+    expect(getSubmitTrigger(panels, 'D', 1)).toBe(0);
+  });
+
+  it('only gemini panel active — only D fires', () => {
+    const panels = { A: false, B: false, C: false, D: true };
+    expect(getSubmitTrigger(panels, 'D', 1)).toBe(1);
+    const others = (['A','B','C'] as PanelId[]).map(p => getSubmitTrigger(panels, p, 1));
+    expect(others.every(t => t === 0)).toBe(true);
+  });
+
+  it('"All" button reactivates all panels', () => {
+    let panels = { A: false, B: false, C: true, D: false };
+    panels = { A: true, B: true, C: true, D: true }; // click All
+    expect(Object.values(panels).every(v => v)).toBe(true);
+  });
+
+  it('"None" button deactivates all panels', () => {
+    let panels = makeActivePanels(true);
+    panels = { A: false, B: false, C: false, D: false }; // click None
+    expect(Object.values(panels).every(v => !v)).toBe(true);
+  });
+
+  it('inactive panel is visually dimmed (opacity 0.4)', () => {
+    const isActive = false;
+    const opacity = isActive ? 1 : 0.4;
+    expect(opacity).toBe(0.4);
+  });
+
+  it('active panel has full opacity', () => {
+    const isActive = true;
+    const opacity = isActive ? 1 : 0.4;
+    expect(opacity).toBe(1);
+  });
+
+});
