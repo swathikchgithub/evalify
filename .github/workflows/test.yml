@@ -19,10 +19,9 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          npm install --legacy-peer-deps --no-audit --no-fund
-          echo "node_modules installed:"
-          ls node_modules/.bin/jest
+        run: npm ci --ignore-scripts --legacy-peer-deps
+        timeout-minutes: 5
 
       - name: Run tests
         run: npx jest --passWithNoTests --ci
+        timeout-minutes: 5
