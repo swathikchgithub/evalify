@@ -192,7 +192,7 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
                 <button onClick={exportJudgeCSV} className="btn-ghost text-xs px-3 py-1.5" style={{borderColor:"rgba(16,185,129,0.3)",color:"var(--openai)"}}>⬇️ Export CSV</button>
               )}
               {judgeHistory.length > 0 && (
-                <button onClick={() => { localStorage.removeItem(STORAGE_KEY_JUDGE); setJudgeHistory([]); }} className="text-xs transition-opacity" style={{color:"#ef4444"}}>Clear all</button>
+                <button onClick={() => { localStorage.removeItem('evalify-judge-history'); setJudgeHistory([]); }} className="text-xs transition-opacity" style={{color:"#ef4444"}}>Clear all</button>
               )}
             </div>
           </div>
