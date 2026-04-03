@@ -11,6 +11,10 @@ import { CUSTOM_ENDPOINTS, KSERVE_ENDPOINTS } from '../../config/endpoints';
 import type { EndpointConfig, KServeEndpointConfig } from '../../config/endpoints';
 
 
+const DEBUG = false;
+const log      = (...args: any[]) => DEBUG && console.log(...args);
+const logError = (...args: any[]) => DEBUG && console.error(...args);
+
 // ── Resolve API key ─────────────────────────────────────────────
 export function resolveApiKey(envVar?: string): string {
   if (!envVar) return '';

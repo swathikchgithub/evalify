@@ -14,6 +14,10 @@ import { StatusDot, AddToPoolButton, KeyValueEditor, TeamEndpointPicker, SaveCon
 import { QueryInput } from './QueryInput';
 
 
+const DEBUG = false;
+const log      = (...args: any[]) => DEBUG && console.log(...args);
+const logError = (...args: any[]) => DEBUG && console.error(...args);
+
 // ── Resolve API key ─────────────────────────────────────────────
 function resolveApiKey(envVar?: string): string {
   if (!envVar) return '';
