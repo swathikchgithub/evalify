@@ -17,21 +17,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-        env:
-          npm_config_fetch_retry_mintimeout: 20000
-          npm_config_fetch_retry_maxtimeout: 120000
+        run: |
+          npm install --legacy-peer-deps --no-audit --no-fund
+          echo "node_modules installed:"
+          ls node_modules/.bin/jest
 
       - name: Run tests
-        run: npm test -- --ci --passWithNoTests
-
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage
-          path: coverage/
-          if-no-files-found: ignore
+        run: npx jest --passWithNoTests --ci
