@@ -10,7 +10,7 @@ import { KSERVE_PRESETS, EVAL_CRITERIA_PRESETS } from '../../config/evalify-kser
 import { CUSTOM_ENDPOINTS, KSERVE_ENDPOINTS } from '../../config/endpoints';
 import type { EndpointConfig, KServeEndpointConfig } from '../../config/endpoints';
 
-import { StatusDot, AddToPoolButton } from './shared';
+import { StatusDot, AddToPoolButton, PromptEditor } from './shared';
 
 
 const DEBUG = false;
