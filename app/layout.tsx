@@ -2,6 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: 'Evalify — LLM Evaluation Platform',
   description: 'Compare LLMs side by side, test custom endpoints, and run MT-Bench style AI evaluations with BYOJ Judge.',

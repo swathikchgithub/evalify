@@ -62,14 +62,14 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-[1600px] mx-auto p-6 space-y-6" style={{minHeight:"100vh"}}>
+    <main className="max-w-[1600px] mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6" style={{minHeight:"100vh"}}>
       <div className="fixed inset-0 header-grid opacity-30 pointer-events-none" style={{zIndex:0}} />
       <div className="relative" style={{zIndex:1}}>
 
         {/* ── Header ─────────────────────────────────────────── */}
-        <div className="flex items-center justify-between flex-wrap gap-3 pb-6" style={{borderBottom:"1px solid var(--border)"}}>
+        <div className="flex items-center justify-between flex-wrap gap-2 pb-4 sm:pb-6" style={{borderBottom:"1px solid var(--border)"}}>
           <div>
-            <h1 className="font-display text-4xl font-bold gradient-text tracking-tight">⚡ Evalify</h1>
+            <h1 className="font-display text-2xl sm:text-4xl font-bold gradient-text tracking-tight">⚡ Evalify</h1>
             <p className="text-sm mt-2 flex items-center gap-2" style={{color:'var(--text-muted)'}}>
               <span className="badge-openai   text-[10px] px-2 py-0.5 rounded-full">Compare LLMs</span>
               <span className="badge-custom   text-[10px] px-2 py-0.5 rounded-full">Custom Endpoints</span>
@@ -104,7 +104,7 @@ export default function Home() {
         )}
 
         {/* ── Tabs ───────────────────────────────────────────── */}
-        <div className="flex gap-1 tab-bar" style={{padding:"4px 0"}}>
+        <div className="flex gap-1 tab-bar overflow-x-auto" style={{padding:"4px 0", WebkitOverflowScrolling:"touch", scrollbarWidth:"none"}}>
           <button onClick={() => setActiveTab('compare')} className="tab"
             style={activeTab==='compare' ? {color:"#fff",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
             ⚡ Compare Models
@@ -135,7 +135,7 @@ export default function Home() {
 
         {/* ── Compare tab ────────────────────────────────────── */}
         <div style={{display: activeTab === 'compare' ? 'block' : 'none'}}>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {(['A','B','C','D'] as const).map(p => (
               <ChatPanel key={p} panelId={p}
                 sharedInput={lastInput.current}
@@ -147,7 +147,7 @@ export default function Home() {
                 onRegisterClear={registerClear} />
             ))}
           </div>
-          <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex gap-2 mt-4 items-center">
+          <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex flex-wrap gap-2 mt-4 items-center">
             <QueryInput value={input} onChange={setInput} onSubmit={handleSubmit}
               placeholder="Ask all four panels simultaneously... (Enter to submit, 💡 for sample questions)" />
             <button type="submit" disabled={!input.trim()} className="btn-primary px-5 py-3 text-sm whitespace-nowrap">

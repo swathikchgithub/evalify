@@ -159,7 +159,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
 
   const provider = getProviderInfo(model);
   return (
-    <div className="flex flex-col glass-dark rounded-2xl overflow-hidden" style={{borderTop:`2px solid ${provider.color}`, minWidth:0, width:"100%", overflow:"hidden"}}>
+    <div className="flex flex-col glass-dark rounded-xl sm:rounded-2xl overflow-hidden" style={{borderTop:`2px solid ${provider.color}`, minWidth:0, width:"100%", overflow:"hidden"}}>
       <div className="p-4 flex flex-col gap-2" style={{background:"var(--bg-elevated)",borderBottom:"1px solid var(--border)"}}>
         {/* Model name + provider badge */}
         <div className="flex items-center gap-2 mb-1">
@@ -216,7 +216,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
           </div>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 min-h-[400px] max-h-[680px] message-area" style={{minWidth:0, overflowX:"hidden"}}>
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 min-h-[280px] sm:min-h-[400px] max-h-[480px] sm:max-h-[680px] message-area" style={{minWidth:0, overflowX:"hidden"}}>
         {messages.length === 0 && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full py-12 gap-3 select-none">
             <div className="text-4xl opacity-20" style={{filter:"grayscale(0.3)"}}>
