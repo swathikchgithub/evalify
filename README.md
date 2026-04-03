@@ -1,53 +1,32 @@
 # ⚡ Evalify — LLM Evaluation Platform
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) ![Tests](https://img.shields.io/badge/tests-370%2B%20passing-brightgreen) ![Next.js](https://img.shields.io/badge/Next.js-16.2-black)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) ![Tests](https://img.shields.io/badge/tests-380%2B%20passing-brightgreen) ![Next.js](https://img.shields.io/badge/Next.js-16.2-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+
+🌐 **Live Demo: [evalify-six.vercel.app](https://evalify-six.vercel.app)**
 
 > **Compare LLMs side by side · Test any endpoint · Run MT-Bench style evaluations · BYOJ Judge**
 
-Evalify is an open-source, production-grade LLM evaluation tool built with Next.js. Compare public models, test private/internal endpoints (including KServe v2 inference servers), and run AI-powered evaluations using the MT-Bench BYOJ (Bring Your Own Judge) framework.
+Evalify is an open-source, production-grade LLM evaluation tool built with Next.js. Compare public models, test private/internal endpoints (including KServe v2 inference servers), tune model parameters, and run AI-powered evaluations using the MT-Bench BYOJ (Bring Your Own Judge) framework.
 
 ---
 
-## 🚀 Running the App
+## 🚀 Quick Start
 
-### First time setup
 ```bash
-git clone https://github.com/YOUR_USERNAME/evalify.git
+git clone https://github.com/swathikchgithub/evalify.git
 cd evalify
 npm install
 cp .env.local.example .env.local
-# Edit .env.local and add your API keys
+# Add your API keys to .env.local
+npm run dev
 ```
 
-### Daily development
-```bash
-npm run dev          # ✅ Recommended: runs tests first, then starts server
-                     # Server only starts if ALL tests pass
-```
+---
 
-### Other run modes
+## 📚 Documentation
 
-| Command | What it does | When to use |
-|---|---|---|
-| `npm run dev` | Tests once → start server (blocks on failure) | Normal startup |
-| `npm run dev:full` | Server + tests watching simultaneously | Active development |
-| `npm run dev:watch` | Tests only, re-run on every file save | Writing tests |
-| `npm run dev:server` | Server only, no tests | Emergency bypass |
-| `npm test` | Run all tests once | CI / quick check |
-| `npm run test:watch` | Tests re-run on every save | TDD workflow |
-| `npm run test:coverage` | Tests + coverage report | Before committing |
-
-### How HMR + tests work together
-
-```
-You save a file
-      │
-      ├─► Next.js HMR ──────→ browser updates instantly (no page refresh)
-      │
-      └─► Jest watch ────────→ re-runs only affected tests (~1 second)
-```
-
-Run `npm run dev:full` to get both simultaneously in one terminal.
+- **[Usage Guide](USAGE.md)** — detailed walkthrough of every feature, workflows, and troubleshooting
+- **[Changelog](CHANGELOG.md)** — release notes and version history
 
 ---
 
@@ -56,129 +35,145 @@ Run `npm run dev:full` to get both simultaneously in one terminal.
 ```env
 # .env.local — never commit this file
 
-# Public LLM providers
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 GROQ_API_KEY=gsk_...
 GOOGLE_GENERATIVE_AI_API_KEY=AI...
-
-# Internal/custom endpoints (optional — referenced in config/endpoints.ts)
-CUSTOM_ENDPOINT_API_KEY=
-KSERVE_API_KEY=
 ```
+
+---
+
+## 🏃 Run Modes
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Tests first → start server (blocks on failure) |
+| `npm run dev:full` | Server + test watch simultaneously |
+| `npm run dev:server` | Server only, skip tests |
+| `npm test` | Run all tests once |
+| `npm run test:watch` | Re-run tests on every file save |
+| `npm run test:coverage` | Tests + coverage report |
 
 ---
 
 ## ✨ Features
 
-### ⚡ Compare Models tab
-- 4-panel side-by-side: GPT-4o, Claude, Llama, Gemini (all Age 5 complexity by default)
-- **Ask All** — sends query to all 4 compare panels simultaneously
-- **📡 All** — sends to all 6 endpoints: 4 compare panels + Custom Endpoint + KServe v2
+### ⚡ Compare Models
+- 4-panel side-by-side: GPT-4o, Claude Haiku, Llama 3.3 70B, Gemini 2.5 Flash
+- **Per-panel parameters**: Temperature, Max tokens, Top-p — each panel independent
+  - Temperature auto-clamped per provider (Claude max=1.0, others max=2.0)
+  - Top-p skipped for Anthropic (API limitation)
+- **Ask All** — sends to all 4 compare panels simultaneously
+- **📡 All** — sends to all 6 endpoints (compare + custom + KServe)
 - **🗑 Clear** — clears all 4 panels at once
-- **🗑** (per panel) — clears individual panel
-- Complexity slider: Age 5 → Expert with system prompt auto-adjustment
-- Custom system prompts (7 presets + free-text editor)
-- Per-response metrics: response time (ms), token count, cost ($)
-- 👍/👎 scoring + win rate tracking in Stats
-- ➕ Add to Judge — queue any response for evaluation
-- 📋 Copy button per message
-- 💡 Sample questions dropdown with recent queries (shared across all tabs)
+- Complexity slider: Age 5 → Expert
+- Custom system prompts with 7 presets
+- Per-response: response time (ms), token count, cost ($)
+- 👍/👎 scoring + win rate tracking
+- ➕ Add to Judge pool (same-question enforcement)
+- 📋 Copy per message
 
-### 🔌 Custom Endpoint tab
-- Test any OpenAI-compatible API (`/v1/chat/completions`)
-- SSL skip for self-signed certs (internal servers)
-- Custom headers + body fields (pre-populated with `X-Allow-Routing: hybrid`)
+### 🔌 Custom Endpoint
+- Any OpenAI-compatible API (`/v1/chat/completions`)
+- SSL skip for self-signed certs (internal/private servers)
+- Custom headers + body fields
 - Save/load named configs to localStorage
 - Works with: Ollama, vLLM, LM Studio, any internal LLM server, OpenRouter, Together AI
 
-### 🧬 KServe v2 tab
+### 🧬 KServe v2
 - 18+ model presets for KServe v2 inference servers
-- Auto-strips `/v1` suffix from URL to prevent path conflicts
+- Auto-strips `/v1` suffix from URL
 - Custom `{{query}}` template editor
 - Covers: LLM chat, moderation, summarization, QA, code, PII detection, embeddings
 
-### ⚖️ Judge tab (BYOJ — Bring Your Own Judge)
-- Full-page tab — not a modal, state persists when switching tabs
-- Pick judge model: GPT-4o Mini, GPT-4o, Claude Sonnet, Gemini, Llama, or your own endpoint
-- Custom endpoint as judge — URL, model dropdown (with known models), Skip SSL checkbox
-- 9 evaluation criteria presets: MT-Bench · Code Quality · RAG/QA · Safety · Business · Medical · Legal
-- Same-question enforcement (normalized: trim + lowercase) — prevents comparing different prompts
-- All Conversations browser — search across all tabs, responses grouped by question
-- Results: winner banner, score table (color-coded), score comparison bars
-- Auto-saves to localStorage, viewable in Stats → Judge History
+### ⚖️ Judge (BYOJ — Bring Your Own Judge)
+- Pick judge model: GPT-4o Mini, Claude Sonnet, Gemini, Llama, or your own endpoint
+- Custom endpoint as judge with SSL skip support
+- 9 evaluation criteria presets: MT-Bench · Code Quality · RAG/QA · Safety · Business · Medical · Legal · Educational · Customer Support
+- Same-question enforcement — pool locked to first question added
+- Score table (color-coded), comparison bars, winner banner
+- Auto-saves to localStorage, viewable in Stats
 
-### 📊 Stats tab
+### 📊 Stats
 - Response History: per-model avg time, tokens, cost, win rate
-- Judge History: all evaluations with score charts and reasoning
-- Full log table with all sessions
+- Judge History: all evaluations with scores and reasoning
 - Export CSV (response history + judge history)
-- Clear history button
 
 ---
 
-## 🏗️ Project Structure
+## ⚙️ Model Parameters
+
+Each compare panel has independent parameter controls:
+
+| Parameter | Range | Default | Notes |
+|---|---|---|---|
+| Temperature | 0–2 (0–1 for Claude) | 0.7 | 0=deterministic, 1=balanced, 2=creative |
+| Max tokens | 100–4000 | 500 | Caps response length |
+| Top-p | 0.1–1.0 | 1.0 | Nucleus sampling (not used for Claude) |
+
+**Provider limits enforced automatically:**
+- Anthropic (Claude): temperature clamped to 1.0, top-p skipped
+- OpenAI, Groq, Google: full range supported
+
+---
+
+## 🏗️ Architecture (SOLID)
 
 ```
 evalify/
 ├── app/
-│   ├── api/
-│   │   ├── chat/route.ts         ← Compare + Custom Endpoint (https.request for SSL skip)
-│   │   ├── kserve/route.ts       ← KServe v2 inference
-│   │   ├── judge/route.ts        ← BYOJ Judge (all providers + custom endpoint)
-│   │   └── endpoints/route.ts    ← Team endpoint config loader
-│   ├── page.tsx                  ← Full UI (5 tabs, ~2200 lines)
-│   ├── layout.tsx                ← Title + favicon
-│   └── globals.css               ← Dark design system (CSS variables)
-├── lib/
-│   └── evalify-utils.ts          ← Pure utility functions (testable)
+│   ├── page.tsx                     ← ~220 lines, composition root only
+│   ├── components/
+│   │   ├── shared.tsx               ← utility fns + small shared components
+│   │   ├── ChatPanel.tsx            ← single compare panel
+│   │   ├── CustomEndpointTab.tsx    ← custom endpoint UI
+│   │   ├── KServeTab.tsx            ← KServe v2 tab
+│   │   ├── StatsPanel.tsx           ← evaluation history
+│   │   ├── JudgeTab.tsx             ← BYOJ judge
+│   │   └── QueryInput.tsx           ← shared query input
+│   └── api/
+│       ├── chat/route.ts            ← Compare + Custom (SSL skip, provider routing)
+│       ├── kserve/route.ts          ← KServe v2 inference
+│       ├── judge/route.ts           ← BYOJ judge (all providers + custom)
+│       └── endpoints/route.ts       ← Team endpoint config loader
+├── types/
+│   └── evalify-types.ts             ← all shared TypeScript interfaces
 ├── config/
-│   └── endpoints.ts              ← Team endpoints (commit this, no secrets)
-├── __tests__/
-│   ├── node/                     ← Jest node environment tests
-│   │   ├── extractNestedContent.test.ts
-│   │   ├── kserve-utils.test.ts
-│   │   ├── stats-utils.test.ts
-│   │   ├── provider-utils.test.ts
-│   │   ├── judge-prompt-normalization.test.ts
-│   │   ├── judge-route.test.ts
-│   │   ├── judge-custom-endpoint.test.ts
-│   │   ├── compare-panel-actions.test.ts
-│   │   └── button-actions.test.ts
-│   └── ui/                       ← Jest jsdom environment tests
-│       └── recent-queries.test.ts
-├── .github/workflows/test.yml    ← CI: tests run on every push
-├── jest.config.js
-├── .env.local.example
-└── package.json
+│   ├── evalify-constants.ts         ← models, pricing, complexity
+│   ├── evalify-kserve-presets.ts    ← KServe presets + eval criteria
+│   └── endpoints.ts                 ← team endpoint config (no secrets)
+├── lib/
+│   └── evalify-utils.ts             ← pure utility functions
+└── __tests__/
+    ├── node/                        ← 10 test files, Jest node env
+    └── ui/                          ← localStorage tests, jsdom env
 ```
 
 ---
 
-## 🧪 Tests
+## 🧪 Tests (380+ passing)
 
 ```bash
-npm test                  # run all tests (currently 290+ tests)
-npm run test:watch        # watch mode — re-runs on file save
-npm run test:coverage     # with coverage report
+npm test                   # run all tests (~1.4 seconds)
+npm run test:watch         # watch mode
+npm run test:coverage      # with coverage report
 ```
 
-**What's tested:**
-
-| File | Tests | Covers |
+| File | Tests | Protects Against |
 |---|---|---|
-| `extractNestedContent` | 12 | Double-encoded JSON from internal LLM server |
-| `kserve-utils` | 11 | KServe URL stripping, template substitution |
-| `stats-utils` | 14 | NaN safety, body field Value: prefix bug |
-| `provider-utils` | 12 | Model routing (OpenAI/Anthropic/Groq/Google) |
-| `judge-prompt-normalization` | 21 | Cross-tab same-question enforcement |
-| `judge-route` | 35 | Prompt building, JSON parsing, validation |
-| `judge-custom-endpoint` | 40+ | SSL config, model dropdown, URL validation |
-| `compare-panel-actions` | 73 | Clear, scores, CSV export, complexity, stats |
-| `button-actions` | 45+ | Ask All, 📡 All, individual clear, Clear All |
+| `extractNestedContent` | 12 | Blank responses from double-encoded JSON |
+| `kserve-utils` | 11 | KServe 404 from /v1/v2/ path conflict |
+| `stats-utils` | 14 | NaN crash, Value: prefix 400 error |
+| `provider-utils` | 12 | Wrong model routing |
+| `judge-prompt-normalization` | 21 | Cross-tab different-question judging |
+| `judge-route` | 35 | Prompt building, JSON parsing |
+| `judge-custom-endpoint` | 40+ | SSL config, model dropdown |
+| `compare-panel-actions` | 73 | Clear, scores, CSV, complexity |
+| `button-actions` | 55+ | Ask All, 📡 All, pool lock, Run Judge |
+| `params-utils` | 20+ | Temp/maxTokens/topP, provider limits |
+| `phase1-constants` | 54 | Extracted types/constants correctness |
+| `phase3-components` | 27 | SOLID component contracts |
 | `recent-queries` | 15 | localStorage, dedup, cross-tab sync |
-
-Every test maps to a **real bug that was caught in production**.
 
 ---
 
@@ -186,27 +181,24 @@ Every test maps to a **real bug that was caught in production**.
 
 ### Custom Endpoint (OpenAI-compatible)
 ```
-Tab:           Custom Endpoint
-Endpoint URL:  https://your-mlserver.com/v1
-Model Name:    llm_generic_large
-Skip SSL:      ✅
+URL:           https://your-ml-inference-server.com/v1
+Model:         your-model-name
+Skip SSL:      ✅ (required for self-signed certs)
 Extra Headers: X-Allow-Routing → hybrid
 Extra Body:    request_metadata → {"trace_id":"evalify-test"}
 ```
 
 ### KServe v2
 ```
-Tab:           KServe v2
-Endpoint URL:  https://your-mlserver.com   ← no /v1 needed (auto-stripped)
-Model Preset:  Select from 18+ built-in presets
+URL:     https://your-ml-inference-server.com  (no /v1 — auto-stripped)
+Preset:  Select from 18+ built-in presets
 ```
 
-### Curl test (verify your endpoint works before configuring)
+### Verify endpoint with curl
 ```bash
 curl -k -X POST "https://your-server.com/v1/chat/completions" \
   -H "Content-Type: application/json" \
-  -H "X-Allow-Routing: hybrid" \
-  -d '{"model":"llm_generic_large","messages":[{"role":"user","content":"hi"}],"stream":false,"request_metadata":{"trace_id":"test"}}'
+  -d '{"model":"your-model","messages":[{"role":"user","content":"hi"}],"stream":false}'
 ```
 
 ---
@@ -215,14 +207,13 @@ curl -k -X POST "https://your-server.com/v1/chat/completions" \
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16.2.1, App Router, TypeScript |
+| Framework | Next.js 16.2, App Router, TypeScript 5 |
 | AI SDK | `ai` v4, `@ai-sdk/openai`, `@ai-sdk/anthropic`, `@ai-sdk/groq`, `@ai-sdk/google` |
 | HTTP | Native `https.request` for internal endpoints (SSL skip) |
-| Fonts | Syne (display), DM Sans (body), JetBrains Mono (code) |
 | Styling | Tailwind CSS v3 + custom dark design system |
-| Storage | localStorage (configs, recent queries, history) |
+| Storage | localStorage (configs, queries, history) |
 | Testing | Jest 29, ts-jest, jest-environment-jsdom |
-| CI | GitHub Actions (runs on every push) |
+| CI | GitHub Actions |
 
 ---
 
@@ -239,30 +230,33 @@ curl -k -X POST "https://your-server.com/v1/chat/completions" \
 
 ---
 
-## 🚢 Deployment (Vercel)
+## 🚢 Deploy to Vercel
 
 ```bash
+# 1. Push to GitHub
 git push origin main
-# Connect repo on vercel.com
-# Add API keys in Project Settings → Environment Variables
+
+# 2. Connect on vercel.com → Import Repository
+# 3. Add environment variables in Project Settings
+# 4. Deploy — done
 ```
 
-> Internal/VPN endpoints work locally only. Public model APIs (OpenAI, Anthropic, etc.) work on Vercel out of the box.
+> Internal/VPN endpoints only work locally. Public model APIs work on Vercel out of the box.
 
 ---
 
 ## 🗺️ Roadmap
 
-- [ ] Batch testing — run multiple prompts against a model at once
-- [ ] Diff view — highlight differences between two panel responses
-- [ ] Chart view in Stats — response time and cost bar charts
-- [ ] Prompt library — save, version, and reuse prompts
-- [ ] Playwright E2E tests for full UI flows
+- [ ] API code panel (Python / TypeScript / curl) for each response
+- [ ] Batch testing — run multiple prompts at once
+- [ ] Diff view — highlight differences between panels
+- [ ] Playwright E2E tests
+- [ ] Prompt library — save and version prompts
 
 ---
 
 ## 📄 License
 
-MIT © 2026 [Swathi Chadalavada](https://github.com/YOUR_USERNAME)
+MIT © 2026 [Swathi Chadalavada](https://github.com/swathikchgithub)
 
 Free to use, modify, and distribute. Attribution appreciated but not required.
