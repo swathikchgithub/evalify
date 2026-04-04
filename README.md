@@ -4,6 +4,8 @@
 
 🌐 **Live Demo: [evalify-six.vercel.app](https://evalify-six.vercel.app)**
 
+![Evalify Demo](public/evalify-demo.gif)
+
 > **Compare LLMs side by side · Test any endpoint · Run MT-Bench style evaluations · BYOJ Judge**
 
 Evalify is an open-source, production-grade LLM evaluation tool built with Next.js. Compare public models, test private/internal endpoints (including KServe v2 inference servers), tune model parameters, and run AI-powered evaluations using the MT-Bench BYOJ (Bring Your Own Judge) framework.
