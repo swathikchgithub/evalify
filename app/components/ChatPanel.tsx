@@ -191,7 +191,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
         {showPromptEditor && <PromptEditor complexity={complexity} customPrompt={customPrompt} isCustomPrompt={isCustomPrompt} onCustomPromptChange={setCustomPrompt} onIsCustomChange={setIsCustomPrompt} />}
         {!isCustomPrompt && (
           <div>
-            <div className="flex justify-between text-xs mb-1"><span style={{color:"var(--text-muted)"}}>Complexity:</span><span className="font-semibold" style={{color:"var(--text-primary)"}}>{COMPLEXITY_LABELS[complexity]}</span></div>
+            <div className="flex justify-between text-xs mb-1"><span style={{color:"#aaaacc"}}>Complexity:</span><span className="font-semibold" style={{color:"var(--text-primary)"}}>{COMPLEXITY_LABELS[complexity]}</span></div>
             <input type="range" min={1} max={5} step={1} value={complexity} onChange={e => setComplexity(Number(e.target.value))} className="w-full accent-blue-500" />
           </div>
         )}
@@ -204,25 +204,25 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
         {/* ── Advanced params — always visible ── */}
         <div className="space-y-2 pt-1">
           <div>
-            <div className="flex justify-between text-[10px] mb-0.5" style={{color:"var(--text-muted)"}}>
+            <div className="flex justify-between text-[11px] mb-0.5 font-medium" style={{color:"#aaaacc"}}>
               <span>Temperature</span><span className="font-mono font-semibold" style={{color:"var(--text-primary)"}}>{temperature}</span>
             </div>
             <input type="range" min={0} max={model.startsWith('claude') ? 1 : 2} step={0.1} value={temperature} onChange={e => setTemperature(Number(e.target.value))} className="w-full accent-blue-500"/>
-            <div className="flex justify-between text-[9px]" style={{color:"var(--text-muted)"}}><span>0 precise</span><span>1 balanced</span><span>2 creative</span></div>
+            <div className="flex justify-between text-[10px]" style={{color:"#9999bb"}}><span>0 precise</span><span>{model.startsWith('claude') ? '1 max' : '1 balanced'}</span>{!model.startsWith('claude') && <span>2 creative</span>}</div>
           </div>
           <div>
-            <div className="flex justify-between text-[10px] mb-0.5" style={{color:"var(--text-muted)"}}>
+            <div className="flex justify-between text-[11px] mb-0.5 font-medium" style={{color:"#aaaacc"}}>
               <span>Max tokens</span><span className="font-mono font-semibold" style={{color:"var(--text-primary)"}}>{maxTokens}</span>
             </div>
             <input type="range" min={100} max={4000} step={100} value={maxTokens} onChange={e => setMaxTokens(Number(e.target.value))} className="w-full accent-blue-500"/>
-            <div className="flex justify-between text-[9px]" style={{color:"var(--text-muted)"}}><span>100</span><span>2000</span><span>4000</span></div>
+            <div className="flex justify-between text-[10px]" style={{color:"#9999bb"}}><span>100</span><span>2000</span><span>4000</span></div>
           </div>
           <div>
-            <div className="flex justify-between text-[10px] mb-0.5" style={{color:"var(--text-muted)"}}>
+            <div className="flex justify-between text-[11px] mb-0.5 font-medium" style={{color:"#aaaacc"}}>
               <span>Top-p</span><span className="font-mono font-semibold" style={{color:"var(--text-primary)"}}>{topP}</span>
             </div>
             <input type="range" min={0.1} max={1} step={0.05} value={topP} onChange={e => setTopP(Number(e.target.value))} className="w-full accent-blue-500"/>
-            <div className="flex justify-between text-[9px]" style={{color:"var(--text-muted)"}}><span>0.1 focused</span><span>0.5</span><span>1.0 diverse</span></div>
+            <div className="flex justify-between text-[10px]" style={{color:"#9999bb"}}><span>0.1 focused</span><span>0.5</span><span>1.0 diverse</span></div>
           </div>
         </div>
       </div>

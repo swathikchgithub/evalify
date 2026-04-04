@@ -15,7 +15,7 @@
 
   --text-primary:  #f0f0ff;
   --text-secondary: #8888aa;
-  --text-muted:    #4a4a6a;
+  --text-muted:    #6a6a8a;
 
   --accent:       #6366f1;
   --accent-glow:  rgba(99,102,241,0.3);
@@ -145,7 +145,7 @@ html, body {
   font-family: 'DM Sans', sans-serif;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
-.input-dark::placeholder { color: var(--text-muted); }
+.input-dark::placeholder { color: #6666aa; }
 .input-dark:focus {
   outline: none;
   border-color: var(--accent);

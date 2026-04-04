@@ -142,6 +142,81 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
               <div className="stat-card"><div className="stat-number" style={{color:"var(--judge)"}}>${totalCost.toFixed(5)}</div><div className="text-xs mt-2" style={{color:"var(--text-muted)"}}>Total Cost</div></div>
               <div className="stat-card"><div className="stat-number gradient-text-warm">{overallWinRate !== null ? `${overallWinRate}%` : '—'}</div><div className="text-xs mt-2" style={{color:"var(--text-muted)"}}>👍 Rate</div></div>
             </div>
+            {/* ── Charts ─────────────────────────────────── */}
+            {Object.keys(byModel).length > 1 && (() => {
+              const models = Object.keys(byModel);
+              const maxTime = Math.max(...models.map(m => avg(byModel[m].map(e => e.responseTime).filter(Boolean) as number[]) ?? 0));
+              const maxCount = Math.max(...models.map(m => byModel[m].length));
+              const barH = 22;
+              const gap = 8;
+              const labelW = 110;
+              const chartW = 340;
+              const svgH = models.length * (barH + gap) + 20;
+
+              const modelColor = (m: string) =>
+                m.startsWith('gpt') ? '#10b981'
+                : m.startsWith('claude') ? '#f97316'
+                : m.startsWith('llama') || m.startsWith('mixtral') ? '#a855f7'
+                : m.startsWith('gemini') ? '#3b82f6'
+                : m.includes('/') ? '#f97316'
+                : '#22d3ee';
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  {/* Response time chart */}
+                  <div className="glass-dark rounded-xl p-4">
+                    <div className="text-xs font-semibold font-display mb-3" style={{color:"var(--text-secondary)"}}>⏱ Avg Response Time (ms)</div>
+                    <svg width="100%" viewBox={`0 0 ${labelW + chartW + 60} ${svgH}`}>
+                      {models.map((m, i) => {
+                        const val = avg(byModel[m].map(e => e.responseTime).filter(Boolean) as number[]) ?? 0;
+                        const w = maxTime > 0 ? (val / maxTime) * chartW : 0;
+                        const y = i * (barH + gap) + 10;
+                        const shortName = m.includes('/') ? m.split('/')[1].replace('deepseek-','DS-') : m.split('-').slice(0,2).join('-');
+                        return (
+                          <g key={m}>
+                            <text x={labelW - 4} y={y + barH/2 + 4} textAnchor="end" fontSize="10" fill="var(--color-text-secondary)">{shortName}</text>
+                            <rect x={labelW} y={y} width={Math.max(w, 2)} height={barH} rx="4" fill={modelColor(m)} opacity="0.8"/>
+                            <text x={labelW + w + 4} y={y + barH/2 + 4} fontSize="10" fill="var(--color-text-secondary)">
+                              {val ? `${val}ms ${maxTime > 0 ? `(${Math.round((val/maxTime)*100)}%)` : ''}` : '—'}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* Usage count chart */}
+                  <div className="glass-dark rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-xs font-semibold font-display" style={{color:"var(--text-secondary)"}}>📊 Responses per Model</div>
+                      <div className="text-[10px]" style={{color:"var(--text-muted)"}}>total: {Object.values(byModel).flat().length}</div>
+                    </div>
+                    <svg width="100%" viewBox={`0 0 ${labelW + chartW + 60} ${svgH}`}>
+                      {models.map((m, i) => {
+                        const val = byModel[m].length;
+                        const w = maxCount > 0 ? (val / maxCount) * chartW : 0;
+                        const y = i * (barH + gap) + 10;
+                        const shortName = m.includes('/') ? m.split('/')[1].replace('deepseek-','DS-') : m.split('-').slice(0,2).join('-');
+                        const scored = byModel[m].filter(e => e.score !== null);
+                        const wr = scored.length > 0 ? Math.round((byModel[m].filter(e => e.score === 'up').length / scored.length) * 100) : null;
+                        return (
+                          <g key={m}>
+                            <text x={labelW - 4} y={y + barH/2 + 4} textAnchor="end" fontSize="10" fill="var(--color-text-secondary)">{shortName}</text>
+                            <rect x={labelW} y={y} width={Math.max(w, 2)} height={barH} rx="4" fill={modelColor(m)} opacity="0.8"/>
+                            <text x={labelW + w + 4} y={y + barH/2 + 4} fontSize="10" fill="var(--color-text-secondary)">
+                              {val} {val === 1 ? 'response' : 'responses'}{wr !== null ? ` · ${wr}% 👍` : ''}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+                  </div>
+
+                </div>
+              );
+            })()}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {Object.entries(byModel).map(([model, entries]) => {
                 const ms = entries.filter(e => e.score !== null);

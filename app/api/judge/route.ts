@@ -177,8 +177,18 @@ export async function POST(req: Request) {
       resultText = text;
     }
 
-    // Parse JSON from result (strip markdown fences if present)
-    const clean = resultText.replace(/```json|```/g, '').trim();
+    // Parse JSON from result
+    // 1. Strip markdown fences
+    // 2. Extract JSON object — handles models that add preamble like "I notice that..."
+    let clean = resultText.replace(/```json|```/g, '').trim();
+
+    // Find the first { and last } to extract just the JSON object
+    const firstBrace = clean.indexOf('{');
+    const lastBrace  = clean.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      clean = clean.slice(firstBrace, lastBrace + 1);
+    }
+
     const parsed = JSON.parse(clean);
 
     return new Response(JSON.stringify(parsed), {

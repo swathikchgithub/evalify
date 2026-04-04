@@ -317,3 +317,48 @@ describe('judge scores structure', () => {
   });
 
 });
+
+describe('Judge route — JSON extraction from preamble text', () => {
+
+  function extractJSON(text: string): string {
+    let clean = text.replace(/```json|```/g, '').trim();
+    const firstBrace = clean.indexOf('{');
+    const lastBrace  = clean.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      clean = clean.slice(firstBrace, lastBrace + 1);
+    }
+    return clean;
+  }
+
+  it('extracts JSON when model adds preamble — the Claude Sonnet bug', () => {
+    const raw = `I notice that the responses vary in quality. Here is my evaluation:\n{"winner":"A","scores":{"A":{"overall":8}}}`;
+    const extracted = extractJSON(raw);
+    expect(() => JSON.parse(extracted)).not.toThrow();
+    expect(JSON.parse(extracted).winner).toBe('A');
+  });
+
+  it('handles clean JSON with no preamble', () => {
+    const raw = `{"winner":"B","scores":{"B":{"overall":9}}}`;
+    const extracted = extractJSON(raw);
+    expect(JSON.parse(extracted).winner).toBe('B');
+  });
+
+  it('handles markdown fences around JSON', () => {
+    const raw = '```json\n{"winner":"C","scores":{}}\n```';
+    const extracted = extractJSON(raw);
+    expect(JSON.parse(extracted).winner).toBe('C');
+  });
+
+  it('handles preamble + markdown fences', () => {
+    const raw = 'Here is my analysis:\n```json\n{"winner":"D","scores":{}}\n```\nI hope this helps.';
+    const extracted = extractJSON(raw);
+    expect(JSON.parse(extracted).winner).toBe('D');
+  });
+
+  it('handles trailing text after JSON', () => {
+    const raw = `{"winner":"A","scores":{}} Let me know if you need more details.`;
+    const extracted = extractJSON(raw);
+    expect(JSON.parse(extracted).winner).toBe('A');
+  });
+
+});

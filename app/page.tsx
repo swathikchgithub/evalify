@@ -172,7 +172,7 @@ export default function Home() {
           </div>
           {/* Panel selector */}
         <div className="flex flex-wrap gap-2 mt-3 items-center">
-          <span className="text-[11px] font-medium" style={{color:"var(--text-muted)"}}>Send to:</span>
+          <span className="text-[12px] font-semibold" style={{color:"#c0c0e0"}}>Send to:</span>
           {(['A','B','C','D'] as const).map(p => {
             const modelName = panelModels[p] ?? '';
             const shortName = modelName.includes('/')
@@ -183,10 +183,10 @@ export default function Home() {
                 onClick={() => togglePanel(p)}
                 className="text-[11px] px-3 py-1 rounded-full border transition-all"
                 style={{
-                  background: activePanels[p] ? 'rgba(99,102,241,0.12)' : 'transparent',
-                  borderColor: activePanels[p] ? 'var(--accent)' : 'var(--border)',
-                  color: activePanels[p] ? 'var(--accent)' : 'var(--text-muted)',
-                  opacity: activePanels[p] ? 1 : 0.5,
+                  background: activePanels[p] ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.04)',
+                  borderColor: activePanels[p] ? '#818cf8' : 'rgba(255,255,255,0.15)',
+                  color: activePanels[p] ? '#c7d2fe' : '#8888aa',
+                  opacity: activePanels[p] ? 1 : 0.6,
                 }}>
                 {activePanels[p] ? '✓' : '○'} {shortName}
               </button>
@@ -194,20 +194,20 @@ export default function Home() {
           })}
           <button type="button"
             onClick={() => setActivePanels({ A:true, B:true, C:true, D:true })}
-            className="text-[10px] px-2 py-0.5 rounded border"
-            style={{color:"var(--text-muted)", borderColor:"var(--border)"}}>
+            className="text-[11px] px-3 py-1 rounded border font-medium"
+            style={{color:"#a0a0c0", borderColor:"rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.06)"}}>
             All
           </button>
           <button type="button"
             onClick={() => setActivePanels({ A:false, B:false, C:false, D:false })}
-            className="text-[10px] px-2 py-0.5 rounded border"
-            style={{color:"var(--text-muted)", borderColor:"var(--border)"}}>
+            className="text-[11px] px-3 py-1 rounded border font-medium"
+            style={{color:"#a0a0c0", borderColor:"rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.06)"}}>
             None
           </button>
         </div>
         <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex flex-wrap gap-2 mt-2 items-center">
             <QueryInput value={input} onChange={setInput} onSubmit={handleSubmit}
-              placeholder="Ask all four panels simultaneously... (Enter to submit, 💡 for sample questions)" />
+              placeholder="Ask all four panels... (Enter to submit, 💡 for samples)" />
             <button type="submit" disabled={!input.trim()} className="btn-primary px-5 py-3 text-sm whitespace-nowrap">
               Ask All
             </button>
