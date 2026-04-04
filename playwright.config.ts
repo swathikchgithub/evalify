@@ -8,6 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
   
+  timeout: 45_000,  // per-test timeout (CI is slower than local)
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
