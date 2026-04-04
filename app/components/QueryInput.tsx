@@ -32,6 +32,7 @@ function getProviderInfo(model: string): { color: string; name: string; badge: s
     return { color: 'var(--groq)', name: 'Groq', badge: 'badge-groq' };
   if (model.startsWith('gemini'))
     return { color: 'var(--google)', name: 'Google', badge: 'badge-google' };
+  if (model.includes('/')) return { color: 'var(--openrouter)', name: 'OpenRouter', badge: 'badge-openrouter' };
   return { color: 'var(--custom)', name: 'Custom', badge: 'badge-custom' };
 }
 
@@ -40,7 +41,8 @@ function getModelColor(model: string): string {
   if (model.startsWith('claude')) return 'anthropic';
   if (model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma')) return 'groq';
   if (model.startsWith('gemini')) return 'google';
-  if (model.startsWith('llm_generic') || model.startsWith('nowllm') || model.startsWith('code_assist')) return 'kserve';
+  if (model.startsWith('kserve-') || model === 'kserve') return 'kserve';
+  if (model.includes('/')) return 'openrouter';
   return 'custom';
 }
 function getModelBadgeClass(model: string): string { return `badge-${getModelColor(model)}`; }

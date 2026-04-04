@@ -34,6 +34,7 @@ function getProviderInfo(model: string): { color: string; name: string; badge: s
     return { color: 'var(--groq)', name: 'Groq', badge: 'badge-groq' };
   if (model.startsWith('gemini'))
     return { color: 'var(--google)', name: 'Google', badge: 'badge-google' };
+  if (model.includes('/')) return { color: 'var(--openrouter)', name: 'OpenRouter', badge: 'badge-openrouter' };
   return { color: 'var(--custom)', name: 'Custom', badge: 'badge-custom' };
 }
 
@@ -42,7 +43,8 @@ function getModelColor(model: string): string {
   if (model.startsWith('claude')) return 'anthropic';
   if (model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma')) return 'groq';
   if (model.startsWith('gemini')) return 'google';
-  if (model.startsWith('llm_generic') || model.startsWith('nowllm') || model.startsWith('code_assist')) return 'kserve';
+  if (model.startsWith('kserve-') || model === 'kserve') return 'kserve';
+  if (model.includes('/')) return 'openrouter';
   return 'custom';
 }
 function getModelBadgeClass(model: string): string { return `badge-${getModelColor(model)}`; }
@@ -232,7 +234,7 @@ export function KServeTab({ onMetric, onScore: onScoreParent, pool, onAddToPool,
               </select>
               {selectedPreset && <p className="text-[10px] text-gray-400 mt-1">{KSERVE_PRESETS.find(p => p.label === selectedPreset)?.description}</p>}
             </div>
-            <div><label className="text-[10px] font-medium uppercase tracking-widest block mb-1" style={{color:"var(--text-muted)"}}>Model Name *</label><input value={kserveModel} onChange={e => setKserveModel(e.target.value)} placeholder="e.g. llm_generic_large" className="input-dark w-full px-2 py-1.5 text-xs" /></div>
+            <div><label className="text-[10px] font-medium uppercase tracking-widest block mb-1" style={{color:"var(--text-muted)"}}>Model Name *</label><input value={kserveModel} onChange={e => setKserveModel(e.target.value)} placeholder="e.g. your-model-name" className="input-dark w-full px-2 py-1.5 text-xs" /></div>
             <div><label className="text-[10px] font-medium uppercase tracking-widest block mb-1" style={{color:"var(--text-muted)"}}>Output Field</label><input value={kserveOutputField} onChange={e => setKserveOutputField(e.target.value)} placeholder="response, answer, summary, code" className="input-dark w-full px-2 py-1.5 text-xs" /></div>
             <div>
               <div className="flex items-center justify-between mb-1"><label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Request Template *</label><span className="text-[10px] text-blue-500">&#123;&#123;query&#125;&#125; = input</span></div>

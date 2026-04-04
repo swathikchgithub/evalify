@@ -4,32 +4,32 @@
 
 export const KSERVE_PRESETS = [
   {
-    label: '🤖 nowllm_generic', model: 'nowllm_generic', outputField: 'response',
+    label: '🤖 llm-chat-v1', model: 'llm-chat-v1', outputField: 'response',
     description: '⚠️ OBSOLETE',
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["{\\"prompt\\": \\"{{query}}\\"}"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"temperature\\": 0.1}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
   {
-    label: '💬 llm_generic', model: 'llm_generic', outputField: 'response',
+    label: '💬 llm-chat', model: 'llm-chat', outputField: 'response',
     description: 'LLM Generic - messages array',
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["[{\\"role\\":\\"system\\",\\"content\\":\\"You are a helpful assistant.\\"},{\\"role\\":\\"user\\",\\"content\\":\\"{{query}}\\"}]"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"num_beams\\":1,\\"max_tokens\\":500,\\"temperature\\":0.1}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
   {
-    label: '🦙 llm_generic_large', model: 'llm_generic_large', outputField: 'response',
+    label: '🦙 llm-chat-large', model: 'llm-chat-large', outputField: 'response',
     description: 'LLM Generic Large - raw prompt',
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["<s> [INST]{{query}}[/INST]"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"temperature\\": 0.1}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
   {
-    label: '🦙 llm_generic_large_v2', model: 'llm_generic_large_v2', outputField: 'response',
+    label: '🦙 llm-chat-large-v2', model: 'llm-chat-large-v2', outputField: 'response',
     description: 'LLM Generic Large v2',
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["<s> [INST]{{query}}[/INST]"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"temperature\\": 0.1}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
   {
-    label: '🤏 llm_generic_small', model: 'llm_generic_small', outputField: 'response',
+    label: '🤏 llm-chat-small', model: 'llm-chat-small', outputField: 'response',
     description: 'LLM Generic Small',
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["[{\\"role\\":\\"user\\",\\"content\\":\\"{{query}}\\"}]"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"moderation_options\\": {\\"moderation_checks\\": {\\"security\\": [], \\"safety\\": [\\"O1\\", \\"O12\\"]}}}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
   {
-    label: '🛡️ llm_generic_small_moderations', model: 'llm_generic_small_moderations', outputField: 'response',
+    label: '🛡️ llm-moderation', model: 'llm-moderation', outputField: 'response',
     description: 'Full moderation O1-O16',
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["[{\\"role\\":\\"content\\",\\"content\\":\\"{{query}}\\"}]"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"moderation_options\\": {\\"moderation_checks\\": {\\"security\\":[], \\"safety\\":[\\"O1\\",\\"O2\\",\\"O3\\",\\"O4\\",\\"O5\\",\\"O6\\",\\"O7\\",\\"O8\\",\\"O9\\",\\"O10\\",\\"O11\\",\\"O12\\",\\"O13\\",\\"O14\\",\\"O15\\",\\"O16\\"]},\\"language\\":\\"en\\",\\"skip_words\\":[]}}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
@@ -39,7 +39,7 @@ export const KSERVE_PRESETS = [
     template: '{"id":"42","inputs":[{"name":"request","shape":[1,1],"datatype":"BYTES","data":["[{\\"role\\":\\"system\\",\\"content\\":\\"Analyze the conversation for CSAT scores.\\"},{\\"role\\":\\"user\\",\\"content\\":\\"{{query}}\\"}]"]},{"name":"options","shape":[1,1],"datatype":"BYTES","data":["{\\"temperature\\": 0.1}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"response"},{"name":"error"},{"name":"response_metadata"}]}',
   },
   {
-    label: '📝 nowllm_summarization_v2', model: 'nowllm_summarization_v2', outputField: 'summary',
+    label: '📝 llm-summarization-v2', model: 'llm-summarization-v2', outputField: 'summary',
     description: '⚠️ 404 - Summarization v2',
     template: '{"id":"42","inputs":[{"name":"text","shape":[1,1],"datatype":"BYTES","data":["{{query}}"]},{"name":"request_metadata","shape":[1,1],"datatype":"BYTES","data":["{\\"trace_id\\":\\"evalify-{{timestamp}}\\"}"]}],"outputs":[{"name":"summary"}]}',
   },
@@ -54,12 +54,12 @@ export const KSERVE_PRESETS = [
     template: '{"id":"42","inputs":[{"name":"text","shape":[1,1],"datatype":"BYTES","data":["{\\"context\\":{}, \\"prompt\\":\\"{{query}}\\"}"]}],"outputs":[{"name":"flow"},{"name":"stats"}]}',
   },
   {
-    label: '💻 code_assist_v1', model: 'code_assist_v1', outputField: 'code',
+    label: '💻 code-assist-v1', model: 'code-assist-v1', outputField: 'code',
     description: 'Code completion v1',
     template: '{"id":"42","inputs":[{"name":"context","shape":[1,1],"datatype":"BYTES","data":["{\\"code_before\\":\\"{{query}}\\", \\"code_after\\":\\"\\"}"]}],"outputs":[{"name":"code"}]}',
   },
   {
-    label: '💻 code_assist_v2', model: 'code_assist_v2', outputField: 'code',
+    label: '💻 code-assist-v2', model: 'code-assist-v2', outputField: 'code',
     description: 'Code completion v2',
     template: '{"id":"42","inputs":[{"name":"context","shape":[1,1],"datatype":"BYTES","data":["{\\"code_before\\":\\"{{query}}\\", \\"code_after\\":\\"\\"}"]}],"outputs":[{"name":"code"}]}',
   },

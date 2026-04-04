@@ -42,7 +42,7 @@ function getModelColor(model: string): string {
   if (model.startsWith('claude')) return 'anthropic';
   if (model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma')) return 'groq';
   if (model.startsWith('gemini')) return 'google';
-  if (model.startsWith('llm_generic') || model.startsWith('nowllm') || model.startsWith('code_assist')) return 'kserve';
+  if (model.startsWith('kserve-') || model === 'kserve') return 'kserve';
   if (model.includes('/')) return 'openrouter';
   return 'custom';
 }

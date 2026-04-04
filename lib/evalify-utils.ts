@@ -148,12 +148,11 @@ export function groupByPrompt<T extends { question: string }>(
 // ── Known model names for custom judge endpoint ───────────────
 // Used in the dropdown in JudgeTab when Custom Endpoint is selected
 export const KNOWN_JUDGE_MODELS = [
-  { value: 'llm_generic_large',    label: '🦙 llm_generic_large',    description: 'Internal — general purpose' },
-  { value: 'llm_generic_large_v2', label: '🦙 llm_generic_large_v2', description: 'Internal — general purpose v2' },
-  { value: 'llm_generic_small',    label: '🤏 llm_generic_small',    description: 'Internal — lightweight' },
-  { value: 'gpt-4o-mini',          label: '⚡ gpt-4o-mini',          description: 'OpenAI — fast & cheap' },
-  { value: 'gpt-4o',               label: '🎯 gpt-4o',               description: 'OpenAI — most accurate' },
-  { value: 'claude-sonnet-4-6',    label: '🧠 claude-sonnet-4-6',    description: 'Anthropic — nuanced' },
+  { value: 'deepseek/deepseek-chat', label: '🐋 DeepSeek V3 (OpenRouter)', description: 'Fast & cheap' },
+  { value: 'deepseek/deepseek-r1',   label: '🧠 DeepSeek R1 (OpenRouter)', description: 'Reasoning model' },
+  { value: 'gpt-4o-mini',            label: '⚡ GPT-4o Mini',              description: 'Fast & cheap' },
+  { value: 'gpt-4o',                 label: '🎯 GPT-4o',                   description: 'OpenAI — most accurate' },
+  { value: 'claude-sonnet-4-6',      label: '🧠 Claude Sonnet',            description: 'Anthropic — nuanced' },
 ];
 
 export function isKnownJudgeModel(modelName: string): boolean {

@@ -40,11 +40,9 @@ export const JUDGE_MODELS = [
 
 // ── Known internal model names for custom judge endpoint ───────
 export const KNOWN_CUSTOM_MODELS = [
-  { value: 'llm_generic_large',    label: '🦙 llm_generic_large'             },
-  { value: 'llm_generic_large_v2', label: '🦙 llm_generic_large_v2'          },
-  { value: 'llm_generic_small',    label: '🤏 llm_generic_small'             },
   { value: 'gpt-4o-mini',          label: '⚡ gpt-4o-mini'                   },
   { value: 'gpt-4o',               label: '🎯 gpt-4o'                        },
+  { value: 'deepseek/deepseek-chat',label: '🐋 deepseek-chat (OpenRouter)'   },
   { value: 'custom',               label: '✏️ Enter custom model name...'    },
 ];
 

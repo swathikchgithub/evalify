@@ -26,15 +26,15 @@ function validate(
 
 const twoResponses = [
   { label: 'A', model: 'gpt-4o-mini', content: 'response 1' },
-  { label: 'B', model: 'llm_generic_large', content: 'response 2' },
+  { label: 'B', model: 'deepseek/deepseek-chat', content: 'response 2' },
 ];
 
 describe('KNOWN_JUDGE_MODELS', () => {
 
-  it('includes internal LLM models', () => {
+  it('includes DeepSeek models via OpenRouter', () => {
     const values = KNOWN_JUDGE_MODELS.map(m => m.value);
-    expect(values).toContain('llm_generic_large');
-    expect(values).toContain('llm_generic_large_v2');
+    expect(values).toContain('deepseek/deepseek-chat');
+    expect(values).toContain('gpt-4o-mini');
   });
 
   it('includes public models for judging', () => {
@@ -61,9 +61,9 @@ describe('KNOWN_JUDGE_MODELS', () => {
 
 describe('isKnownJudgeModel', () => {
 
-  it('returns true for known internal models', () => {
-    expect(isKnownJudgeModel('llm_generic_large')).toBe(true);
-    expect(isKnownJudgeModel('llm_generic_large_v2')).toBe(true);
+  it('returns true for DeepSeek via OpenRouter', () => {
+    expect(isKnownJudgeModel('deepseek/deepseek-chat')).toBe(true);
+    expect(isKnownJudgeModel('deepseek/deepseek-r1')).toBe(true);
   });
 
   it('returns true for known public models', () => {
@@ -78,7 +78,7 @@ describe('isKnownJudgeModel', () => {
   });
 
   it('returns false for partial matches', () => {
-    expect(isKnownJudgeModel('llm_generic')).toBe(false);
+    expect(isKnownJudgeModel('unknown-model')).toBe(false);
     expect(isKnownJudgeModel('gpt')).toBe(false);
   });
 
@@ -87,8 +87,8 @@ describe('isKnownJudgeModel', () => {
 describe('getJudgeModelLabel', () => {
 
   it('returns label for known models', () => {
-    expect(getJudgeModelLabel('llm_generic_large')).toContain('llm_generic_large');
-    expect(getJudgeModelLabel('gpt-4o-mini')).toContain('gpt-4o-mini');
+    expect(getJudgeModelLabel('deepseek/deepseek-chat')).toBeTruthy();
+    expect(getJudgeModelLabel('gpt-4o-mini')).toBeTruthy();
   });
 
   it('returns the model name itself for unknown models (user-typed)', () => {
