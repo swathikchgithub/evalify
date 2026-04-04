@@ -12,7 +12,11 @@ export const MODELS = [
   { value: 'llama-3.3-70b-versatile',   label: 'Llama 3.3 70B (Groq)'           },
   { value: 'mixtral-8x7b-32768',        label: 'Mixtral 8x7B (Groq)'            },
   { value: 'gemini-2.5-flash',          label: 'Gemini 2.5 Flash (Google)'      },
-  { value: 'gemini-2.5-flash-lite',     label: 'Gemini 2.5 Flash Lite (Google)' },
+  { value: 'gemini-2.5-flash-lite',       label: 'Gemini 2.5 Flash Lite (Google)'     },
+  { value: 'deepseek/deepseek-chat',       label: 'DeepSeek V3 (OpenRouter)'          },
+  { value: 'deepseek/deepseek-r1',         label: 'DeepSeek R1 Reasoner (OpenRouter)' },
+  { value: 'meta-llama/llama-4-maverick',  label: 'Llama 4 Maverick (OpenRouter)'     },
+  { value: 'google/gemini-2.5-pro',        label: 'Gemini 2.5 Pro (OpenRouter)'       },
 ];
 
 export const DEFAULT_PANEL_MODELS = {
@@ -29,7 +33,9 @@ export const JUDGE_MODELS = [
   { value: 'claude-sonnet-4-6',       label: 'Claude Sonnet — Nuanced',          badge: '🧠' },
   { value: 'gemini-2.5-flash',        label: 'Gemini 2.5 Flash — Balanced',      badge: '✨' },
   { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B — Open source',      badge: '🦙' },
-  { value: 'custom',                  label: 'Custom Endpoint — Your own model',  badge: '🔌' },
+  { value: 'deepseek/deepseek-chat',    label: 'DeepSeek V3 — Fast & cheap',        badge: '🐋' },
+  { value: 'deepseek/deepseek-r1',      label: 'DeepSeek R1 — Reasoning',           badge: '🧠' },
+  { value: 'custom',                    label: 'Custom Endpoint — Your own model',   badge: '🔌' },
 ];
 
 // ── Known internal model names for custom judge endpoint ───────
@@ -52,7 +58,11 @@ export const MODEL_PRICING: Record<string, { input: number; output: number }> = 
   'llama-3.3-70b-versatile':   { input: 0.00000059,  output: 0.00000079  },
   'mixtral-8x7b-32768':        { input: 0.00000024,  output: 0.00000024  },
   'gemini-2.5-flash':          { input: 0.0000001,   output: 0.0000004   },
-  'gemini-2.5-flash-lite':     { input: 0.00000005,  output: 0.0000002   },
+  'gemini-2.5-flash-lite':          { input: 0.00000005,   output: 0.0000002    },
+  'deepseek/deepseek-chat':         { input: 0.00000028,   output: 0.00000042   },
+  'deepseek/deepseek-r1':           { input: 0.00000055,   output: 0.00000219   },
+  'meta-llama/llama-4-maverick':    { input: 0.0000004,    output: 0.0000004    },
+  'google/gemini-2.5-pro':          { input: 0.00000125,   output: 0.00001      },
 };
 
 // ── Complexity ────────────────────────────────────────────────

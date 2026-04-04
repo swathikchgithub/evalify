@@ -39,6 +39,7 @@ OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 GROQ_API_KEY=gsk_...
 GOOGLE_GENERATIVE_AI_API_KEY=AI...
+OPENROUTER_API_KEY=sk-or-...      # optional — enables DeepSeek, Llama 4, 100+ models
 ```
 
 ---
@@ -67,6 +68,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=AI...
 - **📡 All** — sends to all 6 endpoints (compare + custom + KServe)
 - **🗑 Clear** — clears all 4 panels at once
 - Complexity slider: Age 5 → Expert
+- **Panel selector** — send to specific panels only (shows real model names)
 - Custom system prompts with 7 presets
 - Per-response: response time (ms), token count, cost ($)
 - 👍/👎 scoring + win rate tracking
@@ -87,7 +89,7 @@ GOOGLE_GENERATIVE_AI_API_KEY=AI...
 - Covers: LLM chat, moderation, summarization, QA, code, PII detection, embeddings
 
 ### ⚖️ Judge (BYOJ — Bring Your Own Judge)
-- Pick judge model: GPT-4o Mini, Claude Sonnet, Gemini, Llama, or your own endpoint
+- Pick judge model: GPT-4o Mini, Claude Sonnet, Gemini, Llama, **DeepSeek V3/R1**, or your own endpoint
 - Custom endpoint as judge with SSL skip support
 - 9 evaluation criteria presets: MT-Bench · Code Quality · RAG/QA · Safety · Business · Medical · Legal · Educational · Customer Support
 - Same-question enforcement — pool locked to first question added
@@ -113,7 +115,7 @@ Each compare panel has independent parameter controls:
 
 **Provider limits enforced automatically:**
 - Anthropic (Claude): temperature clamped to 1.0, top-p skipped
-- OpenAI, Groq, Google: full range supported
+- OpenAI, Groq, Google, OpenRouter: full range supported
 
 ---
 
@@ -225,6 +227,7 @@ curl -k -X POST "https://your-server.com/v1/chat/completions" \
 | Anthropic | Claude Haiku 4.5, Claude Sonnet 4.6 |
 | Groq | Llama 3.3 70B, Mixtral 8x7B |
 | Google | Gemini 2.5 Flash, Gemini 2.5 Flash Lite |
+| OpenRouter | DeepSeek V3, DeepSeek R1, Llama 4 Maverick, Gemini 2.5 Pro, 100+ more |
 | Custom | Any OpenAI-compatible endpoint |
 | KServe | 18+ preset models |
 

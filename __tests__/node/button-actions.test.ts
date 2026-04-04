@@ -698,3 +698,208 @@ describe('Panel selector — send to specific panels', () => {
   });
 
 });
+
+describe('Pool bar — Clear Pool button', () => {
+
+  it('clears all entries from pool', () => {
+    let pool = [
+      { id: '1', label: 'A — GPT-4o Mini', prompt: 'What is AI?' },
+      { id: '2', label: 'B — Claude Haiku', prompt: 'What is AI?' },
+    ];
+    pool = []; // onClick={() => setPool([])}
+    expect(pool).toHaveLength(0);
+  });
+
+  it('Clear Pool is independent from Clear All panels', () => {
+    // Clear Pool → empties judge pool only
+    // Clear All → wipes compare panel messages only
+    // they don't affect each other
+    let pool = [{ id: '1', label: 'A — GPT', prompt: 'test' }];
+    const panelMessages = ['msg1', 'msg2'];
+
+    pool = []; // clear pool
+    expect(pool).toHaveLength(0);
+    expect(panelMessages).toHaveLength(2); // panels unaffected
+  });
+
+  it('Run Judge button only shows when pool has 2+ entries', () => {
+    const showRunJudge = (pool: any[]) => pool.length >= 2;
+    expect(showRunJudge([])).toBe(false);
+    expect(showRunJudge([{ id: '1' }])).toBe(false);
+    expect(showRunJudge([{ id: '1' }, { id: '2' }])).toBe(true);
+  });
+
+  it('Clear Pool always visible when pool has entries', () => {
+    const showClearPool = (pool: any[]) => pool.length > 0;
+    expect(showClearPool([])).toBe(false);
+    expect(showClearPool([{ id: '1' }])).toBe(true);
+  });
+
+});
+
+describe('Judge model selector — DeepSeek models', () => {
+
+  const JUDGE_MODELS = [
+    { value: 'gpt-4o-mini',               badge: '⚡' },
+    { value: 'gpt-4o',                    badge: '🎯' },
+    { value: 'claude-sonnet-4-6',         badge: '🧠' },
+    { value: 'gemini-2.5-flash',          badge: '✨' },
+    { value: 'llama-3.3-70b-versatile',   badge: '🦙' },
+    { value: 'deepseek/deepseek-chat',    badge: '🐋' },
+    { value: 'deepseek/deepseek-r1',      badge: '🧠' },
+    { value: 'custom',                    badge: '🔌' },
+  ];
+
+  it('DeepSeek V3 is in judge models', () => {
+    expect(JUDGE_MODELS.find(m => m.value === 'deepseek/deepseek-chat')).toBeDefined();
+  });
+
+  it('DeepSeek R1 is in judge models', () => {
+    expect(JUDGE_MODELS.find(m => m.value === 'deepseek/deepseek-r1')).toBeDefined();
+  });
+
+  it('DeepSeek models use OpenRouter format (contain /)', () => {
+    const deepseekModels = JUDGE_MODELS.filter(m => m.value.includes('deepseek'));
+    for (const m of deepseekModels) {
+      expect(m.value).toContain('/');
+    }
+  });
+
+  it('all judge models have a badge', () => {
+    for (const m of JUDGE_MODELS) {
+      expect(m.badge).toBeTruthy();
+    }
+  });
+
+});
+
+describe('Judge results — stale results cleared on pool change', () => {
+
+  function simulatePoolChange(
+    oldPoolIds: string[],
+    newPoolIds: string[],
+    currentResult: any
+  ) {
+    // Mirrors the useEffect: if pool changes, clear result
+    const poolKey = newPoolIds.join(',');
+    const oldKey  = oldPoolIds.join(',');
+    if (poolKey !== oldKey) {
+      return { result: null, selectedIds: newPoolIds };
+    }
+    return { result: currentResult, selectedIds: newPoolIds };
+  }
+
+  it('clears results when pool entries change', () => {
+    const oldIds = ['1', '2', '3', '4'];
+    const newIds = ['5', '6', '7', '8']; // new DeepSeek models
+    const staleResult = { winner: 'A — GPT-4o Mini', scores: {} };
+
+    const { result } = simulatePoolChange(oldIds, newIds, staleResult);
+    expect(result).toBeNull();
+  });
+
+  it('keeps results when pool is unchanged', () => {
+    const ids = ['1', '2', '3', '4'];
+    const existingResult = { winner: 'B — Claude Haiku', scores: {} };
+
+    const { result } = simulatePoolChange(ids, ids, existingResult);
+    expect(result).not.toBeNull();
+    expect(result.winner).toBe('B — Claude Haiku');
+  });
+
+  it('clears results when a single entry is removed', () => {
+    const oldIds = ['1', '2', '3', '4'];
+    const newIds = ['1', '2', '3']; // one removed
+    const staleResult = { winner: 'A — GPT', scores: {} };
+
+    const { result } = simulatePoolChange(oldIds, newIds, staleResult);
+    expect(result).toBeNull();
+  });
+
+  it('selectedIds updated to match new pool', () => {
+    const oldIds = ['1', '2'];
+    const newIds = ['3', '4'];
+
+    const { selectedIds } = simulatePoolChange(oldIds, newIds, null);
+    expect(selectedIds).toEqual(['3', '4']);
+  });
+
+});
+
+describe('Panel selector — model names instead of Panel A/B/C/D', () => {
+
+  // Mirrors the shortName logic in app-page.tsx
+  function getShortName(modelName: string): string {
+    if (!modelName) return '';
+    if (modelName.includes('/')) {
+      return modelName.split('/')[1]
+        .replace('deepseek-', 'DS-')
+        .replace('-versatile', '');
+    }
+    return modelName.split('-').slice(0, 2).join('-');
+  }
+
+  it('shows short name for OpenAI models', () => {
+    expect(getShortName('gpt-4o-mini')).toBe('gpt-4o');
+    expect(getShortName('gpt-4o')).toBe('gpt-4o');
+  });
+
+  it('shows short name for Anthropic models', () => {
+    expect(getShortName('claude-haiku-4-5-20251001')).toBe('claude-haiku');
+    expect(getShortName('claude-sonnet-4-6')).toBe('claude-sonnet');
+  });
+
+  it('shows short name for Groq models', () => {
+    expect(getShortName('llama-3.3-70b-versatile')).toBe('llama-3.3');
+  });
+
+  it('shows short name for Google models', () => {
+    expect(getShortName('gemini-2.5-flash')).toBe('gemini-2.5');
+  });
+
+  it('shows DS- prefix for DeepSeek via OpenRouter', () => {
+    expect(getShortName('deepseek/deepseek-chat')).toBe('DS-chat');
+    expect(getShortName('deepseek/deepseek-r1')).toBe('DS-r1');
+  });
+
+  it('shows short name for other OpenRouter models', () => {
+    expect(getShortName('meta-llama/llama-4-maverick')).toBe('llama-4-maverick');
+    expect(getShortName('google/gemini-2.5-pro')).toBe('gemini-2.5-pro');
+  });
+
+  it('returns empty string for empty model', () => {
+    expect(getShortName('')).toBe('');
+  });
+
+  it('panel selector updates when model dropdown changes', () => {
+    // panelModels state mirrors what's selected in each ChatPanel
+    let panelModels: Record<string, string> = {
+      A: 'gpt-4o-mini',
+      B: 'claude-haiku-4-5-20251001',
+      C: 'llama-3.3-70b-versatile',
+      D: 'gemini-2.5-flash',
+    };
+
+    // User changes Panel A to DeepSeek
+    const onModelChange = (panelId: string, model: string) => {
+      panelModels = { ...panelModels, [panelId]: model };
+    };
+
+    onModelChange('A', 'deepseek/deepseek-chat');
+    expect(panelModels.A).toBe('deepseek/deepseek-chat');
+    expect(getShortName(panelModels.A)).toBe('DS-chat');
+    expect(panelModels.B).toBe('claude-haiku-4-5-20251001'); // unchanged
+  });
+
+  it('all 4 panels can have different models', () => {
+    const panelModels = {
+      A: 'deepseek/deepseek-chat',
+      B: 'deepseek/deepseek-r1',
+      C: 'meta-llama/llama-4-maverick',
+      D: 'google/gemini-2.5-pro',
+    };
+    const names = Object.values(panelModels).map(getShortName);
+    expect(names).toEqual(['DS-chat', 'DS-r1', 'llama-4-maverick', 'gemini-2.5-pro']);
+  });
+
+});

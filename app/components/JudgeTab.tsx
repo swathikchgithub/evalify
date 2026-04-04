@@ -33,6 +33,7 @@ function getProviderInfo(model: string): { color: string; name: string; badge: s
     return { color: 'var(--groq)', name: 'Groq', badge: 'badge-groq' };
   if (model.startsWith('gemini'))
     return { color: 'var(--google)', name: 'Google', badge: 'badge-google' };
+  if (model.includes('/')) return { color: 'var(--openrouter)', name: 'OpenRouter', badge: 'badge-openrouter' };
   return { color: 'var(--custom)', name: 'Custom', badge: 'badge-custom' };
 }
 
@@ -42,6 +43,7 @@ function getModelColor(model: string): string {
   if (model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma')) return 'groq';
   if (model.startsWith('gemini')) return 'google';
   if (model.startsWith('llm_generic') || model.startsWith('nowllm') || model.startsWith('code_assist')) return 'kserve';
+  if (model.includes('/')) return 'openrouter';
   return 'custom';
 }
 function getModelBadgeClass(model: string): string { return `badge-${getModelColor(model)}`; }
@@ -93,6 +95,13 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
   const [judgeModel, setJudgeModel]           = useState('gpt-4o-mini');
   const [criteria, setCriteria]               = useState('');
   const [selectedIds, setSelectedIds]         = useState<string[]>(pool.map(p => p.id));
+
+  // Clear stale results when pool entries change
+  useEffect(() => {
+    setSelectedIds(pool.map(p => p.id));
+    setResult(null);
+    setSaved(false);
+  }, [pool.map(p => p.id).join(',')]);
   const [customJudgeUrl, setCustomJudgeUrl]     = useState('');
   const [customJudgeKey, setCustomJudgeKey]     = useState('');
   const [customJudgeModel, setCustomJudgeModel]   = useState('');

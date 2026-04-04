@@ -33,6 +33,7 @@ function getProviderInfo(model: string): { color: string; name: string; badge: s
     return { color: 'var(--groq)', name: 'Groq', badge: 'badge-groq' };
   if (model.startsWith('gemini'))
     return { color: 'var(--google)', name: 'Google', badge: 'badge-google' };
+  if (model.includes('/')) return { color: 'var(--openrouter)', name: 'OpenRouter', badge: 'badge-openrouter' };
   return { color: 'var(--custom)', name: 'Custom', badge: 'badge-custom' };
 }
 
@@ -42,6 +43,7 @@ function getModelColor(model: string): string {
   if (model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma')) return 'groq';
   if (model.startsWith('gemini')) return 'google';
   if (model.startsWith('llm_generic') || model.startsWith('nowllm') || model.startsWith('code_assist')) return 'kserve';
+  if (model.includes('/')) return 'openrouter';
   return 'custom';
 }
 function getModelBadgeClass(model: string): string { return `badge-${getModelColor(model)}`; }
@@ -84,7 +86,7 @@ function avg(nums: (number | null | undefined)[]): number | null {
 }
 
 // ── ChatPanel ─────────────────────────────────────────────────
-export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onScore: onScoreParent, pool, onAddToPool, onRemoveFromPool, modelStatuses, onModelStatus, clearTrigger = 0, onRegisterClear, isActive = true }: {
+export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onScore: onScoreParent, pool, onAddToPool, onRemoveFromPool, modelStatuses, onModelStatus, clearTrigger = 0, onRegisterClear, isActive = true, onModelChange }: {
   panelId: string; sharedInput: string; submitTrigger: number;
   onMetric: (e: HistoryEntry) => void; onScore: (id: string, s: 'up' | 'down') => void;
   pool: PoolEntry[]; onAddToPool: (e: PoolEntry) => void; onRemoveFromPool: (id: string) => void;
@@ -92,8 +94,15 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
   clearTrigger?: number;
   onRegisterClear?: (panelId: string, fn: () => void) => void;
   isActive?: boolean;
+  onModelChange?: (panelId: string, model: string) => void;
 }) {
   const [model, setModel] = useState(panelId === 'A' ? 'gpt-4o-mini' : panelId === 'B' ? 'claude-haiku-4-5-20251001' : panelId === 'C' ? 'llama-3.3-70b-versatile' : 'gemini-2.5-flash');
+
+  // Notify parent of model changes so panel selector can show real names
+  const handleModelChange = (newModel: string) => {
+    setModel(newModel);
+    onModelChange?.(panelId, newModel);
+  };
   const [complexity, setComplexity] = useState(1); // Default Age 5 — simplest, most approachable
   const [messageMetrics, setMessageMetrics] = useState<Record<string, PanelMetrics>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -173,7 +182,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
           </span>
         </div>
         <div className="flex gap-2 items-center">
-          <select value={model} onChange={e => setModel(e.target.value)} className="select-dark flex-1 p-1.5 text-[11px]" style={{opacity:0.7}}>
+          <select value={model} onChange={e => handleModelChange(e.target.value)} className="select-dark flex-1 p-1.5 text-[11px]" style={{opacity:0.7}}>
             {MODELS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
           </select>
           <button onClick={() => setShowPromptEditor(s => !s)} className={`btn-ghost text-xs px-2 py-1`} style={isCustomPrompt ? {borderColor:'#a855f7',color:'#a855f7',background:'rgba(168,85,247,0.1)'} : {}}>✏️</button>
@@ -250,7 +259,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
                 </div>
                 <div className="flex gap-1 items-center flex-wrap">
                   <AddToPoolButton
-                    entry={{ label: `Panel ${panelId}`, model, content: m.content, prompt: lastPrompt, tab: 'compare', timestamp: new Date().toLocaleTimeString() }}
+                    entry={{ label: `${panelId} — ${MODELS.find(m => m.value === model)?.label.split(' (')[0] ?? model}`, model, content: m.content, prompt: lastPrompt, tab: 'compare', timestamp: new Date().toLocaleTimeString() }}
                     pool={pool} onAdd={onAddToPool} onRemove={onRemoveFromPool}
                   />
                   <button onClick={() => { setScores(p => ({ ...p, [m.id]: 'up' })); onScoreParent(m.id, 'up'); }} className={`text-[10px] px-2 py-0.5 rounded border ${scores[m.id] === 'up' ? 'bg-green-100 border-green-400 text-green-600' : 'border-gray-200 hover:text-green-500'}`}>👍</button>

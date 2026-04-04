@@ -33,8 +33,10 @@
   --google-bg:    rgba(59,130,246,0.1);
   --custom:       #22d3ee;
   --custom-bg:    rgba(34,211,238,0.1);
-  --kserve:       #ec4899;
-  --kserve-bg:    rgba(236,72,153,0.1);
+  --kserve:         #ec4899;
+  --kserve-bg:      rgba(236,72,153,0.1);
+  --openrouter:     #f97316;
+  --openrouter-bg:  rgba(249,115,22,0.1);
   --judge:        #f59e0b;
   --judge-bg:     rgba(245,158,11,0.1);
 }
@@ -165,13 +167,15 @@ option { background: var(--bg-elevated); color: var(--text-primary); }
 .badge-groq      { background: var(--groq-bg);      color: var(--groq);      border: 1px solid rgba(168,85,247,0.2);  }
 .badge-google    { background: var(--google-bg);     color: var(--google);    border: 1px solid rgba(59,130,246,0.2);  }
 .badge-custom    { background: var(--custom-bg);     color: var(--custom);    border: 1px solid rgba(34,211,238,0.2);  }
-.badge-kserve    { background: var(--kserve-bg);     color: var(--kserve);    border: 1px solid rgba(236,72,153,0.2);  }
+.badge-kserve      { background: var(--kserve-bg);      color: var(--kserve);      border: 1px solid rgba(236,72,153,0.2);  }
+.badge-openrouter  { background: var(--openrouter-bg);  color: var(--openrouter);  border: 1px solid rgba(249,115,22,0.2);  }
 
 /* Panel top accent lines */
 .panel-openai    { border-top: 2px solid var(--openai); }
 .panel-anthropic { border-top: 2px solid var(--anthropic); }
 .panel-groq      { border-top: 2px solid var(--groq); }
-.panel-google    { border-top: 2px solid var(--google); }
+.panel-google      { border-top: 2px solid var(--google); }
+.panel-openrouter  { border-top: 2px solid var(--openrouter); }
 
 /* ── Status Dot Animations ──────────────────────────────────── */
 @keyframes pulse-green {

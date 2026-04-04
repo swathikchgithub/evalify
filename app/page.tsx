@@ -26,6 +26,13 @@ export default function Home() {
   const clearFnsRef   = useRef<Record<string, () => void>>({});
   const registerClear = useCallback((id: string, fn: () => void) => { clearFnsRef.current[id] = fn; }, []);
   const lastInput     = useRef('');
+  const [panelModels, setPanelModels] = useState<Record<string, string>>({
+    A: 'gpt-4o-mini', B: 'claude-haiku-4-5-20251001',
+    C: 'llama-3.3-70b-versatile', D: 'gemini-2.5-flash',
+  });
+  const onModelChange = useCallback((panelId: string, model: string) => {
+    setPanelModels(prev => ({ ...prev, [panelId]: model }));
+  }, []);
   const [activePanels, setActivePanels] = useState<Record<string, boolean>>({
     A: true, B: true, C: true, D: true,
   });
@@ -100,11 +107,20 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            {pool.length >= 2 && (
-              <button onClick={() => setActiveTab('judge')} className="btn-judge text-xs px-3 py-1 whitespace-nowrap">
-                ⚖️ Run Judge
+            <div className="flex gap-2 items-center">
+              <button
+                onClick={() => setPool([])}
+                className="text-xs px-2 py-1 rounded border whitespace-nowrap"
+                style={{borderColor:"rgba(239,68,68,0.3)",color:"#ef4444"}}
+                title="Clear all from pool">
+                🗑 Clear Pool
               </button>
-            )}
+              {pool.length >= 2 && (
+                <button onClick={() => setActiveTab('judge')} className="btn-judge text-xs px-3 py-1 whitespace-nowrap">
+                  ⚖️ Run Judge
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -150,26 +166,29 @@ export default function Home() {
                 modelStatuses={modelStatuses} onModelStatus={onModelStatus}
                 clearTrigger={clearAllTrigger}
                 onRegisterClear={registerClear}
-                isActive={activePanels[p]} />
+                isActive={activePanels[p]}
+                onModelChange={onModelChange} />
             ))}
           </div>
           {/* Panel selector */}
         <div className="flex flex-wrap gap-2 mt-3 items-center">
           <span className="text-[11px] font-medium" style={{color:"var(--text-muted)"}}>Send to:</span>
           {(['A','B','C','D'] as const).map(p => {
-            const labels: Record<string, string> = { A:'GPT-4o', B:'Claude', C:'Llama', D:'Gemini' };
-            const colors: Record<string, string> = { A:'var(--openai)', B:'var(--anthropic)', C:'var(--groq)', D:'var(--google)' };
+            const modelName = panelModels[p] ?? '';
+            const shortName = modelName.includes('/')
+              ? modelName.split('/')[1].replace('deepseek-', 'DS-').replace('-versatile','')
+              : modelName.split('-').slice(0,2).join('-');
             return (
               <button key={p} type="button"
                 onClick={() => togglePanel(p)}
                 className="text-[11px] px-3 py-1 rounded-full border transition-all"
                 style={{
-                  background: activePanels[p] ? `${colors[p]}22` : 'transparent',
-                  borderColor: activePanels[p] ? colors[p] : 'var(--border)',
-                  color: activePanels[p] ? colors[p] : 'var(--text-muted)',
+                  background: activePanels[p] ? 'rgba(99,102,241,0.12)' : 'transparent',
+                  borderColor: activePanels[p] ? 'var(--accent)' : 'var(--border)',
+                  color: activePanels[p] ? 'var(--accent)' : 'var(--text-muted)',
                   opacity: activePanels[p] ? 1 : 0.5,
                 }}>
-                {activePanels[p] ? '✓' : '○'} {labels[p]}
+                {activePanels[p] ? '✓' : '○'} {shortName}
               </button>
             );
           })}

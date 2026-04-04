@@ -2,6 +2,7 @@
 // BYOJ (Bring Your Own Judge) - supports any model as evaluator
 
 import { openai } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { anthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { google } from '@ai-sdk/google';
@@ -11,6 +12,15 @@ import https from 'https';
 export const runtime = 'nodejs';
 
 const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+const openrouter = createOpenAICompatible({
+  name: 'openrouter',
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPENROUTER_API_KEY,
+  headers: {
+    'HTTP-Referer': 'https://evalify-six.vercel.app',
+    'X-Title': 'Evalify',
+  },
+});
 
 function buildJudgePrompt(prompt: string, responses: any[], criteria: string): string {
   const responseBlocks = responses
@@ -147,14 +157,16 @@ export async function POST(req: Request) {
 
     // ── Standard providers ──────────────────────────────────
     } else {
-      const isGroq   = judgeModel.startsWith('llama') || judgeModel.startsWith('mixtral');
-      const isGoogle = judgeModel.startsWith('gemini');
-      const isClaude = judgeModel.startsWith('claude');
+      const isGroq       = judgeModel.startsWith('llama') || judgeModel.startsWith('mixtral');
+      const isGoogle     = judgeModel.startsWith('gemini');
+      const isClaude     = judgeModel.startsWith('claude');
+      const isOpenRouter = judgeModel.includes('/');
 
       const modelInstance = isClaude
         ? anthropic(judgeModel)
-        : isGroq   ? groq(judgeModel)
-        : isGoogle ? google(judgeModel)
+        : isGroq       ? groq(judgeModel)
+        : isGoogle     ? google(judgeModel)
+        : isOpenRouter ? openrouter(judgeModel)
         : openai(judgeModel ?? 'gpt-4o-mini');
 
       const { text } = await generateText({

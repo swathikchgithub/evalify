@@ -1,4 +1,5 @@
 import { openai } from '@ai-sdk/openai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { anthropic } from '@ai-sdk/anthropic';
 import { createGroq } from '@ai-sdk/groq';
 import { google } from '@ai-sdk/google';
@@ -14,6 +15,15 @@ const log = (...args: any[]) => DEBUG && console.log('[route]', ...args);
 const logError = (...args: any[]) => DEBUG && console.error('[route ERROR]', ...args);
 
 const groq = createGroq({ apiKey: process.env.GROQ_API_KEY });
+const openrouter = createOpenAICompatible({
+  name: 'openrouter',
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPENROUTER_API_KEY,
+  headers: {
+    'HTTP-Referer': 'https://evalify-six.vercel.app',
+    'X-Title': 'Evalify',
+  },
+});
 
 // ── Use native https module for custom endpoint calls ─────────────
 // fetch() in Next.js Turbopack doesn't reliably support SSL skip;
@@ -290,19 +300,23 @@ export async function POST(req: Request) {
   }
 
   // ── Standard providers ───────────────────────────────────────
-  const isGroq   = model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma');
-  const isGoogle = model.startsWith('gemini');
+  const isGroq       = model.startsWith('llama') || model.startsWith('mixtral') || model.startsWith('gemma');
+  const isGoogle     = model.startsWith('gemini');
+  const isOpenRouter = model.includes('/');
 
   const modelInstance = model.startsWith('claude')
     ? anthropic(model)
-    : isGroq   ? groq(model)
-    : isGoogle ? google(model)
+    : isGroq       ? groq(model)
+    : isGoogle     ? google(model)
+    : isOpenRouter ? openrouter(model)
     : openai(model ?? 'gpt-4o-mini');
 
   // Anthropic: temperature max is 1.0, topP not supported alongside temperature
   // Google: temperature max is 2.0
   // OpenAI/Groq: temperature max is 2.0
   const isAnthropic = model.startsWith('claude');
+  // OpenRouter passes params to underlying model — use conservative limits
+  const isOpenRouterModel = model.includes('/');
   const safeTemp = temperature !== undefined
     ? Math.min(Number(temperature), isAnthropic ? 1.0 : 2.0)
     : undefined;
