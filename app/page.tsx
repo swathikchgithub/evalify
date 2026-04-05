@@ -260,7 +260,7 @@ export default function Home() {
         </div>
 
         {/* ── Stats tab ───────────────────────────────────────── */}
-        <div style={{display: activeTab === 'stats' ? 'block' : 'none'}}>
+        {activeTab === 'stats' && <div>
           <div className="glass-dark rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display font-bold text-2xl gradient-text">📊 Evaluation History</h2>
@@ -273,7 +273,7 @@ export default function Home() {
             </div>
             <StatsPanel history={history} onClearHistory={() => setHistory([])} />
           </div>
-        </div>
+        </div>}
 
       </div>
     </main>

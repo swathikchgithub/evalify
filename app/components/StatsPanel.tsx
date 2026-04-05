@@ -87,6 +87,7 @@ function avg(nums: (number | null | undefined)[]): number | null {
 // ── Stats ─────────────────────────────────────────────────────
 // avg → defined in helper functions above
 
+// data-testid added for E2E tests
 export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[]; onClearHistory: () => void }) {
   const [judgeHistory, setJudgeHistory] = useState<JudgeResult[]>([]);
   const [activeSection, setActiveSection] = useState<'responses' | 'judge'>('responses');
@@ -118,10 +119,10 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
     <div className="space-y-4">
       {/* Section tabs */}
       <div className="flex gap-2">
-        <button onClick={() => setActiveSection('responses')} className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${activeSection === 'responses' ? 'btn-primary' : 'btn-ghost'}`}>
+        <button data-testid="stats-response-history-btn" onClick={() => setActiveSection('responses')} className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${activeSection === 'responses' ? 'btn-primary' : 'btn-ghost'}`}>
           📊 Response History {history.length > 0 && `(${history.length})`}
         </button>
-        <button onClick={() => setActiveSection('judge')} className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${activeSection === 'judge' ? 'btn-judge' : 'btn-ghost'}`}>
+        <button data-testid="stats-judge-history-btn" onClick={() => setActiveSection('judge')} className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${activeSection === 'judge' ? 'btn-judge' : 'btn-ghost'}`}>
           ⚖️ Judge History {judgeHistory.length > 0 && `(${judgeHistory.length})`}
         </button>
       </div>
