@@ -37,18 +37,20 @@ test.describe('TC-01 — App Loads', () => {
 
   test('4 compare panels visible on load', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('GPT-4o Mini')).toBeVisible();
-    await expect(page.getByText('Claude Haiku')).toBeVisible();
-    await expect(page.getByText('Llama 3.3 70B')).toBeVisible();
-    await expect(page.getByText('Gemini 2.5 Flash')).toBeVisible();
+    // Target panel headers specifically using span.font-display
+    await expect(page.locator('span.font-display').filter({ hasText: 'GPT-4o Mini' }).first()).toBeVisible();
+    await expect(page.locator('span.font-display').filter({ hasText: 'Claude Haiku' }).first()).toBeVisible();
+    await expect(page.locator('span.font-display').filter({ hasText: 'Llama 3.3 70B' }).first()).toBeVisible();
+    await expect(page.locator('span.font-display').filter({ hasText: 'Gemini 2.5 Flash' }).first()).toBeVisible();
   });
 
   test('provider badges visible', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText('OpenAI')).toBeVisible();
-    await expect(page.getByText('Anthropic')).toBeVisible();
-    await expect(page.getByText('Groq')).toBeVisible();
-    await expect(page.getByText('Google')).toBeVisible();
+    // Target badge spans only — exclude hidden option elements
+    await expect(page.locator('span.badge-openai, div.badge-openai').first()).toBeVisible();
+    await expect(page.locator('span.badge-anthropic, div.badge-anthropic').first()).toBeVisible();
+    await expect(page.locator('span.badge-groq, div.badge-groq').first()).toBeVisible();
+    await expect(page.locator('span.badge-google, div.badge-google').first()).toBeVisible();
   });
 
   test('no console errors on load', async ({ page }) => {
@@ -87,9 +89,9 @@ test.describe('TC-03 — Panel Selector', () => {
   test('All reactivates all panels after None', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('text=Send to:', { timeout: 5000 });
-    const sendToRow = page.locator('div.flex.flex-wrap.gap-2').filter({ hasText: 'Send to:' });
+    const sendToRow = page.locator('div.flex.flex-wrap.gap-2').filter({ hasText: 'Send to:' }).first();
     await page.getByRole('button', { name: 'None' }).click();
-    await page.getByRole('button', { name: 'All' }).click();
+    await page.getByRole('button', { name: 'All', exact: true }).click();
     await expect(sendToRow.locator('button').filter({ hasText: '✓' })).toHaveCount(4);
   });
 
@@ -208,8 +210,9 @@ test.describe('TC-10 — Judge Tab', () => {
   test('evaluation criteria preset dropdown visible', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Judge/ }).click();
-    await expect(page.getByText('EVALUATION CRITERIA')).toBeVisible();
-    await expect(page.getByText('Select a preset...')).toBeVisible();
+    await expect(page.getByText('EVALUATION CRITERIA').first()).toBeVisible();
+    // Use combobox role — avoids matching hidden <option> elements
+    await expect(page.getByRole('combobox').last()).toBeVisible();
   });
 
   test('shows no responses message when pool empty', async ({ page }) => {
@@ -234,7 +237,7 @@ test.describe('TC-11 — Custom Endpoint', () => {
   test('Skip SSL toggle visible', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Custom Endpoint/ }).click();
-    await expect(page.getByText(/Skip SSL/)).toBeVisible();
+    await expect(page.getByText(/Skip SSL/).first()).toBeVisible();
   });
 
   test('Save Config button visible', async ({ page }) => {
@@ -263,7 +266,7 @@ test.describe('TC-12 — KServe Tab', () => {
 
   test('KServe tab loads with 18 presets count', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByText(/KServe.*18|18.*KServe/)).toBeVisible();
+    await expect(page.getByText(/KServe.*18|18.*KServe/).first()).toBeVisible();
   });
 
   test('model name placeholder is generic', async ({ page }) => {
@@ -333,7 +336,7 @@ test.describe('TC-14 — Recent Queries', () => {
   test('💡 button opens sample questions', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: '💡' }).click();
-    await expect(page.getByText(/Engineering|Business|AI|Science/)).toBeVisible();
+    await expect(page.getByText(/Engineering|Business|AI|Science/).first()).toBeVisible();
   });
 
   test('clicking sample question fills input', async ({ page }) => {
@@ -403,8 +406,9 @@ test.describe('TC-16 — Navigation', () => {
     await page.goto('/');
     await page.getByRole('button', { name: /Stats/ }).click();
     await page.getByRole('button', { name: /Compare Models/ }).click();
-    await expect(page.getByText('GPT-4o Mini')).toBeVisible();
-    await expect(page.getByText('Claude Haiku')).toBeVisible();
+    // Use specific locator — GPT-4o Mini appears in panel header span
+    await expect(page.locator('span.font-display').filter({ hasText: 'GPT-4o Mini' }).first()).toBeVisible();
+    await expect(page.locator('span.font-display').filter({ hasText: 'Claude Haiku' }).first()).toBeVisible();
   });
 
 });
