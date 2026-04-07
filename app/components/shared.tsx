@@ -255,3 +255,83 @@ export function TeamEndpointPicker({ type, onLoad }: {
   );
 }
 
+// ── Tab Guide Component ──────────────────────────────────────
+// Reusable how-to guide for all tabs
+// Usage: <TabGuide id="compare" title="How to Compare Models" steps={[...]} />
+
+interface GuideStep {
+  icon: string;
+  title: string;
+  desc: string;
+  color: string;
+}
+
+interface TabGuideProps {
+  id: string;           // unique key for localStorage
+  title: string;
+  steps: GuideStep[];
+  tip?: string;
+}
+
+export function TabGuide({ id, title, steps, tip }: TabGuideProps) {
+  const storageKey = `evalify-guide-${id}-seen`;
+  // Default false to avoid SSR/client mismatch (localStorage unavailable on server)
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    try {
+      setShow(localStorage.getItem(storageKey) !== 'true');
+    } catch {
+      setShow(true);
+    }
+  }, [storageKey]);
+
+  const dismiss = () => {
+    setShow(false);
+    try { localStorage.setItem(storageKey, 'true'); } catch {}
+  };
+
+  if (!show) return (
+    <div className="flex justify-end mb-3">
+      <button onClick={() => setShow(true)} className="text-[10px] px-2 py-1 rounded border"
+        style={{color:"var(--text-muted)",borderColor:"var(--border)"}}>
+        ? How to use
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="mb-5 rounded-2xl overflow-hidden" style={{border:"1px solid rgba(99,102,241,0.3)",background:"rgba(99,102,241,0.04)"}}>
+      <div className="flex items-center justify-between px-4 py-3"
+        style={{borderBottom:"1px solid rgba(99,102,241,0.15)",background:"rgba(99,102,241,0.08)"}}>
+        <span className="text-sm font-semibold font-display" style={{color:"var(--accent)"}}>✨ {title}</span>
+        <button onClick={dismiss} className="text-[11px] px-2 py-0.5 rounded" style={{color:"var(--text-muted)"}}>✕ Got it</button>
+      </div>
+      <div className={`grid gap-px`} style={{gridTemplateColumns:`repeat(${steps.length},1fr)`,background:"rgba(99,102,241,0.1)"}}>
+        {steps.map(s => (
+          <div key={s.title} className="px-4 py-4" style={{background:"var(--bg-card)"}}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                style={{background:`${s.color}22`,color:s.color,border:`1px solid ${s.color}44`}}>
+                {steps.indexOf(s) + 1}
+              </div>
+              <span className="text-base">{s.icon}</span>
+              <span className="text-xs font-semibold font-display" style={{color:"var(--text-primary)"}}>{s.title}</span>
+            </div>
+            <p className="text-[11px] leading-relaxed" style={{color:"var(--text-muted)"}}>{s.desc}</p>
+          </div>
+        ))}
+      </div>
+      {tip && (
+        <div className="px-4 py-2 flex items-center justify-between"
+          style={{borderTop:"1px solid rgba(99,102,241,0.15)"}}>
+          <span className="text-[10px]" style={{color:"var(--text-muted)"}}>💡 {tip}</span>
+          <button onClick={dismiss} className="text-[11px] px-3 py-1 rounded-lg font-medium"
+            style={{background:"rgba(99,102,241,0.15)",color:"var(--accent)",border:"1px solid rgba(99,102,241,0.3)"}}>
+            Got it, let's go! →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

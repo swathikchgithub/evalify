@@ -93,6 +93,21 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
   onNavigate: (tab: 'compare' | 'openai' | 'kserve' | 'judge' | 'stats') => void;
 }) {
   const [judgeModel, setJudgeModel]           = useState('gpt-4o-mini');
+  // Default false to avoid SSR/client hydration mismatch
+  const [showGuide, setShowGuide]             = useState(false);
+
+  useEffect(() => {
+    try {
+      setShowGuide(localStorage.getItem('evalify-judge-guide-seen') !== 'true');
+    } catch {
+      setShowGuide(true);
+    }
+  }, []);
+
+  const dismissGuide = () => {
+    setShowGuide(false);
+    try { localStorage.setItem('evalify-judge-guide-seen', 'true'); } catch {}
+  };
   const [criteria, setCriteria]               = useState('');
   const [selectedIds, setSelectedIds]         = useState<string[]>(pool.map(p => p.id));
 
@@ -179,7 +194,14 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
         }),
       });
       const data = await res.json();
-      if (data.error) { setError(data.error); }
+      if (data.error) {
+        const err = data.error;
+        if (err.includes('cookie') || err.includes('credential') || err.includes('No ')) {
+          setError('API key error — check your OPENROUTER_API_KEY or ANTHROPIC_API_KEY in .env.local');
+        } else {
+          setError(err);
+        }
+      }
       else {
         setResult(data);
         saveJudgeResult({
@@ -191,7 +213,14 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
         });
         setSaved(true);
       }
-    } catch (e) { setError(String(e)); }
+    } catch (e) { 
+      const msg = String(e);
+      if (msg.includes('cookie') || msg.includes('auth') || msg.includes('credential')) {
+        setError('API key error — check your OPENROUTER_API_KEY or ANTHROPIC_API_KEY in .env.local');
+      } else {
+        setError(msg);
+      }
+    }
     finally { setJudging(false); }
   };
 
@@ -204,11 +233,97 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
 
         {/* LEFT: Config */}
         <div className="glass-dark rounded-2xl p-6 space-y-6">
-          <h2 className="font-display font-bold text-2xl gradient-text-warm">⚖️ LLM Judge</h2>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-display font-bold text-2xl gradient-text-warm">⚖️ LLM Judge</h2>
+            {!showGuide && (
+              <button onClick={() => setShowGuide(true)} className="text-[10px] px-2 py-1 rounded border"
+                style={{color:"var(--text-muted)",borderColor:"var(--border)"}}>
+                ? How to use
+              </button>
+            )}
+          </div>
+
+          {/* ── Beautiful How-To Guide ───────────────────────── */}
+          {showGuide && (
+            <div className="mb-5 rounded-2xl overflow-hidden" style={{border:"1px solid rgba(245,158,11,0.3)",background:"rgba(245,158,11,0.04)"}}>
+              <div className="flex items-center justify-between px-4 py-3" style={{borderBottom:"1px solid rgba(245,158,11,0.15)",background:"rgba(245,158,11,0.08)"}}>
+                <span className="text-sm font-semibold font-display" style={{color:"var(--judge)"}}>✨ How to use the Judge</span>
+                <button onClick={dismissGuide} className="text-[11px] px-2 py-0.5 rounded" style={{color:"var(--text-muted)"}}>✕ Got it</button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-px" style={{background:"rgba(245,158,11,0.1)"}}>
+                {[
+                  { step: '1', icon: '⚡', title: 'Pick a Judge', desc: 'Choose which AI model will evaluate the responses. GPT-4o Mini is fast & cheap.', color: '#6366f1' },
+                  { step: '2', icon: '📝', title: 'Add Responses', desc: 'Go to Compare tab → ask a question → click ➕ Add to Judge on each response.', color: '#f97316' },
+                  { step: '3', icon: '📊', title: 'Pick Criteria', desc: 'Select a preset like MT-Bench or Code Quality, or leave blank for default scoring.', color: '#10b981' },
+                  { step: '4', icon: '⚖️', title: 'Run Judge', desc: 'Click the orange button. Results appear on the right with scores and a winner!', color: '#f59e0b' },
+                ].map(s => (
+                  <div key={s.step} className="px-4 py-4" style={{background:"var(--bg-card)"}}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                        style={{background:`${s.color}22`,color:s.color,border:`1px solid ${s.color}44`}}>
+                        {s.step}
+                      </div>
+                      <span className="text-base">{s.icon}</span>
+                      <span className="text-xs font-semibold font-display" style={{color:"var(--text-primary)"}}>{s.title}</span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed" style={{color:"var(--text-muted)"}}>{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="px-4 py-2 flex items-center justify-between" style={{borderTop:"1px solid rgba(245,158,11,0.15)"}}>
+                <span className="text-[10px]" style={{color:"var(--text-muted)"}}>💡 All responses must answer the same question to be compared fairly.</span>
+                <button onClick={dismissGuide} className="text-[11px] px-3 py-1 rounded-lg font-medium"
+                  style={{background:"rgba(245,158,11,0.15)",color:"var(--judge)",border:"1px solid rgba(245,158,11,0.3)"}}>
+                  Got it, let's go! →
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Step 1 — Judge Model */}
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-3 font-mono" style={{color:"var(--text-secondary)"}}>① Select Judge Model</div>
+            {/* ── Step Progress Guide ───────────────────────────── */}
+            {(() => {
+              const step1Done = judgeModel !== '';
+              const step2Done = selectedEntries.length >= 2;
+              const step3Ready = step1Done && step2Done;
+              return (
+                <div className="flex items-center gap-2 mb-5 p-3 rounded-xl" style={{background:"rgba(99,102,241,0.06)", border:"1px solid rgba(99,102,241,0.15)"}}>
+                  {[
+                    { n: 1, label: 'Pick a Judge', done: step1Done, active: !step1Done },
+                    { n: 2, label: 'Select Responses', done: step2Done, active: step1Done && !step2Done },
+                    { n: 3, label: 'Run Judge', done: false, active: step3Ready },
+                  ].map((s, i) => (
+                    <div key={s.n} className="flex items-center gap-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0"
+                          style={{
+                            background: s.done ? 'var(--openai)' : s.active ? 'var(--accent)' : 'var(--bg-elevated)',
+                            color: s.done || s.active ? '#fff' : 'var(--text-muted)',
+                            border: s.active ? '2px solid var(--accent)' : s.done ? 'none' : '1px solid var(--border)',
+                          }}>
+                          {s.done ? '✓' : s.n}
+                        </div>
+                        <span className="text-[11px] font-medium whitespace-nowrap"
+                          style={{color: s.done ? 'var(--openai)' : s.active ? '#c7d2fe' : 'var(--text-muted)'}}>
+                          {s.label}
+                        </span>
+                      </div>
+                      {i < 2 && (
+                        <div className="flex-1 h-px mx-2" style={{background: s.done ? 'var(--openai)' : 'var(--border)'}}/>
+                      )}
+                    </div>
+                  ))}
+                  {step3Ready && (
+                    <div className="text-[11px] font-semibold animate-pulse ml-auto shrink-0" style={{color:"var(--judge)"}}>
+                      ↓ Ready!
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            <div className="flex items-center gap-2 mb-3"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{background:"var(--accent)",color:"#fff"}}>1</div><span className="text-xs font-bold uppercase tracking-widest font-mono" style={{color:"#c7d2fe"}}>Select Judge Model</span></div>
             <div className="grid grid-cols-2 gap-2">
               {JUDGE_MODELS.map(m => (
                 <button key={m.value} onClick={() => setJudgeModel(m.value)}
@@ -218,8 +333,8 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
                     : {borderColor:'var(--border)',background:'var(--bg-elevated)'}}>
                   <span className="text-xl">{m.badge}</span>
                   <div className="min-w-0">
-                    <div className="text-sm font-semibold font-display truncate" style={{color:"var(--text-primary)"}}>{m.label.split('—')[0].trim()}</div>
-                    <div className="text-xs truncate" style={{color:"var(--text-muted)"}}>{m.label.split('—')[1]?.trim()}</div>
+                    <div className="text-sm font-semibold font-display truncate" style={{color:"#e0e0ff"}}>{m.label.split('—')[0].trim()}</div>
+                    <div className="text-xs truncate" style={{color:"#9090bb"}}>{m.label.split('—')[1]?.trim()}</div>
                   </div>
                   {judgeModel === m.value && <span className="ml-auto text-xs" style={{color:"var(--judge)"}}>✓</span>}
                 </button>
@@ -240,7 +355,7 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
           {/* Step 2 — Select Responses */}
           <div>
             <div className="text-xs font-bold uppercase tracking-widest mb-3 font-mono" style={{color:"var(--text-secondary)"}}>
-              ② Select Responses <span style={{color:"var(--text-muted)",fontWeight:400}}>({selectedEntries.length} selected — same question only)</span>
+              <div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{background:"var(--accent)",color:"#fff"}}>2</div><span className="text-xs font-bold uppercase tracking-widest font-mono" style={{color:"#c7d2fe"}}>Select Responses</span><span className="text-xs" style={{color:"var(--text-muted)"}}>({selectedEntries.length} selected — same question only)</span></div>
             </div>
 
             {lockedPrompt && (
@@ -349,7 +464,7 @@ export function JudgeTab({ pool, allHistory, onRemoveFromPool, onNavigate }: {
 
           {/* Step 3 — Criteria */}
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2 font-mono" style={{color:"var(--text-secondary)"}}>③ Evaluation Criteria</div>
+            <div className="flex items-center gap-2 mb-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{background:"var(--accent)",color:"#fff"}}>3</div><span className="text-xs font-bold uppercase tracking-widest font-mono" style={{color:"#c7d2fe"}}>Evaluation Criteria</span><span className="text-xs" style={{color:"var(--text-muted)"}}>(optional)</span></div>
             <select onChange={e => { setCriteria(e.target.value === 'custom' ? '' : e.target.value); }} className="select-dark w-full p-1.5 text-xs mb-2">
               {EVAL_CRITERIA_PRESETS.map(p => <option key={p.label} value={p.value}>{p.label}</option>)}
             </select>

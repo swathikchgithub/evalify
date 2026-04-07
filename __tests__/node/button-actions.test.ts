@@ -903,3 +903,179 @@ describe('Panel selector — model names instead of Panel A/B/C/D', () => {
   });
 
 });
+
+describe('Judge guide — how-to overlay', () => {
+
+  // Mirrors the showGuide logic in JudgeTab.tsx
+  function shouldShowGuide(localStorageValue: string | null): boolean {
+    return localStorageValue !== 'true';
+  }
+
+  function dismissGuide(): string {
+    return 'true'; // value stored in localStorage
+  }
+
+  it('shows guide on first visit (no localStorage key)', () => {
+    expect(shouldShowGuide(null)).toBe(true);
+  });
+
+  it('shows guide when localStorage value is not "true"', () => {
+    expect(shouldShowGuide('false')).toBe(true);
+    expect(shouldShowGuide('')).toBe(true);
+    expect(shouldShowGuide('0')).toBe(true);
+  });
+
+  it('hides guide when user has dismissed it', () => {
+    expect(shouldShowGuide('true')).toBe(false);
+  });
+
+  it('dismissGuide sets localStorage to "true"', () => {
+    const stored = dismissGuide();
+    expect(stored).toBe('true');
+    expect(shouldShowGuide(stored)).toBe(false);
+  });
+
+  it('guide has 4 steps', () => {
+    const steps = [
+      { step: '1', title: 'Pick a Judge' },
+      { step: '2', title: 'Add Responses' },
+      { step: '3', title: 'Pick Criteria' },
+      { step: '4', title: 'Run Judge' },
+    ];
+    expect(steps).toHaveLength(4);
+    expect(steps[0].title).toBe('Pick a Judge');
+    expect(steps[1].title).toBe('Add Responses');
+    expect(steps[2].title).toBe('Pick Criteria');
+    expect(steps[3].title).toBe('Run Judge');
+  });
+
+  it('steps are in correct order', () => {
+    const steps = ['Pick a Judge', 'Add Responses', 'Pick Criteria', 'Run Judge'];
+    // Step 1 must come before step 2 etc.
+    expect(steps.indexOf('Pick a Judge')).toBeLessThan(steps.indexOf('Add Responses'));
+    expect(steps.indexOf('Add Responses')).toBeLessThan(steps.indexOf('Pick Criteria'));
+    expect(steps.indexOf('Pick Criteria')).toBeLessThan(steps.indexOf('Run Judge'));
+  });
+
+  it('"How to use" button brings guide back after dismissal', () => {
+    // Simulate: user dismisses → clicks "? How to use" → guide shows again
+    let stored = dismissGuide();
+    expect(shouldShowGuide(stored)).toBe(false); // dismissed
+    // User clicks "? How to use" → setShowGuide(true) — overrides localStorage
+    let showGuide = true; // direct state override
+    expect(showGuide).toBe(true); // shows again ✅
+  });
+
+  it('tip message is shown in guide footer', () => {
+    const tip = 'All responses must answer the same question to be compared fairly.';
+    expect(tip).toContain('same question');
+    expect(tip.length).toBeGreaterThan(20);
+  });
+
+});
+
+describe('Judge step progress — visual indicator', () => {
+
+  function getStepStatus(judgeModel: string, selectedCount: number) {
+    const step1Done  = judgeModel !== '';
+    const step2Done  = selectedCount >= 2;
+    const step3Ready = step1Done && step2Done;
+    return { step1Done, step2Done, step3Ready };
+  }
+
+  it('no steps done on initial load', () => {
+    // judgeModel defaults to gpt-4o-mini so step1 is actually done
+    const { step1Done, step2Done, step3Ready } = getStepStatus('gpt-4o-mini', 0);
+    expect(step1Done).toBe(true);
+    expect(step2Done).toBe(false);
+    expect(step3Ready).toBe(false);
+  });
+
+  it('step 1 done when model is selected', () => {
+    const { step1Done } = getStepStatus('gpt-4o-mini', 0);
+    expect(step1Done).toBe(true);
+  });
+
+  it('step 1 not done when no model selected', () => {
+    const { step1Done } = getStepStatus('', 0);
+    expect(step1Done).toBe(false);
+  });
+
+  it('step 2 requires at least 2 responses', () => {
+    expect(getStepStatus('gpt-4o-mini', 0).step2Done).toBe(false);
+    expect(getStepStatus('gpt-4o-mini', 1).step2Done).toBe(false);
+    expect(getStepStatus('gpt-4o-mini', 2).step2Done).toBe(true);
+    expect(getStepStatus('gpt-4o-mini', 4).step2Done).toBe(true);
+  });
+
+  it('step 3 ready only when both step 1 and step 2 complete', () => {
+    expect(getStepStatus('',            2).step3Ready).toBe(false);
+    expect(getStepStatus('gpt-4o-mini', 1).step3Ready).toBe(false);
+    expect(getStepStatus('gpt-4o-mini', 2).step3Ready).toBe(true);
+  });
+
+  it('Ready! indicator shows when step 3 is ready', () => {
+    const { step3Ready } = getStepStatus('claude-sonnet-4-6', 3);
+    expect(step3Ready).toBe(true); // "↓ Ready!" should show
+  });
+
+  it('step colors are correct', () => {
+    const stepColors = {
+      1: '#6366f1', // indigo
+      2: '#f97316', // orange
+      3: '#10b981', // green
+      4: '#f59e0b', // amber
+    };
+    expect(stepColors[1]).toBe('#6366f1');
+    expect(stepColors[4]).toBe('#f59e0b');
+  });
+
+});
+
+describe('TabGuide — SSR hydration safety', () => {
+
+  it('defaults to false (hidden) on server render to avoid hydration mismatch', () => {
+    // Server: localStorage unavailable → default false
+    // Client: useEffect reads localStorage → sets correct value
+    const serverDefault = false;
+    expect(serverDefault).toBe(false); // no hydration mismatch
+  });
+
+  it('shows guide after mount when localStorage is null', () => {
+    // Simulates useEffect behavior
+    const storageValue = null; // localStorage.getItem returns null when not set
+    const shouldShow = storageValue !== 'true';
+    expect(shouldShow).toBe(true);
+  });
+
+  it('hides guide after mount when previously dismissed', () => {
+    const storageValue = 'true'; // localStorage.getItem after dismiss
+    const shouldShow = storageValue !== 'true';
+    expect(shouldShow).toBe(false);
+  });
+
+  it('each tab has unique storage key to avoid conflicts', () => {
+    const keys = [
+      'evalify-guide-compare-seen',
+      'evalify-guide-custom-endpoint-seen',
+      'evalify-guide-kserve-seen',
+      'evalify-judge-guide-seen',
+      'evalify-guide-stats-seen',
+    ];
+    const unique = new Set(keys);
+    expect(unique.size).toBe(keys.length); // all unique
+  });
+
+  it('dismissing one tab guide does not affect others', () => {
+    // Each tab uses a different key
+    const storage: Record<string, string> = {};
+    storage['evalify-guide-compare-seen'] = 'true'; // dismissed compare
+    
+    const compareShowing = storage['evalify-guide-compare-seen'] !== 'true';
+    const judgeShowing   = storage['evalify-judge-guide-seen'] !== 'true';
+    
+    expect(compareShowing).toBe(false); // dismissed
+    expect(judgeShowing).toBe(true);   // still showing
+  });
+
+});

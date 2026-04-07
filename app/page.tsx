@@ -5,7 +5,7 @@ import type { ModelStatus, HistoryEntry, PoolEntry, ActiveTab } from '../types/e
 import { STORAGE_KEY_CONFIGS, MAX_RECENT_QUERIES } from '../config/evalify-constants';
 import { KSERVE_PRESETS } from '../config/evalify-kserve-presets';
 
-import { AddToPoolButton, saveRecentQuery, loadJudgeHistory } from './components/shared';
+import { AddToPoolButton, saveRecentQuery, loadJudgeHistory, TabGuide } from './components/shared';
 import { ChatPanel }           from './components/ChatPanel';
 import { CustomEndpointTab }   from './components/CustomEndpointTab';
 import { KServeTab }           from './components/KServeTab';
@@ -156,6 +156,15 @@ export default function Home() {
 
         {/* ── Compare tab ────────────────────────────────────── */}
         <div style={{display: activeTab === 'compare' ? 'block' : 'none'}}>
+          <TabGuide id="compare" title="How to Compare Models"
+            steps={[
+              { icon: "✏️", title: "Type a Question", desc: "Type any question in the input bar at the bottom of the page.", color: "#6366f1" },
+              { icon: "⚡", title: "Ask All", desc: "Click Ask All to send to all 4 panels simultaneously and compare responses.", color: "#f97316" },
+              { icon: "🎛️", title: "Tune Params", desc: "Adjust temperature, max tokens, and top-p independently per panel.", color: "#10b981" },
+              { icon: "➕", title: "Add to Judge", desc: "Click ➕ Add to Judge on any response to evaluate them with AI.", color: "#f59e0b" },
+            ]}
+            tip="Switch Panel A to DeepSeek, Panel B to Claude — compare any models side by side."
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             {(['A','B','C','D'] as const).map(p => (
               <ChatPanel key={p} panelId={p}

@@ -9,6 +9,7 @@ import { MODELS, JUDGE_MODELS, KNOWN_CUSTOM_MODELS, MODEL_PRICING, DEFAULT_COMPL
 import { KSERVE_PRESETS, EVAL_CRITERIA_PRESETS } from '../../config/evalify-kserve-presets';
 import { CUSTOM_ENDPOINTS, KSERVE_ENDPOINTS } from '../../config/endpoints';
 import type { EndpointConfig, KServeEndpointConfig } from '../../config/endpoints';
+import { TabGuide } from './shared';
 
 
 
@@ -113,10 +114,23 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
     a.click(); URL.revokeObjectURL(url);
   };
 
+  const statsGuide = (
+    <TabGuide id="stats" title="How to read Evaluation History"
+      steps={[
+        { icon: "📊", title: "Response History", desc: "All responses with timing, tokens, cost and 👍/👎 scores per model.", color: "#6366f1" },
+        { icon: "⚖️", title: "Judge History", desc: "Past judge evaluations with winner, scores and reasoning.", color: "#f59e0b" },
+        { icon: "📈", title: "Charts", desc: "Bar charts show avg response time and usage — color coded by provider.", color: "#10b981" },
+        { icon: "⬇️", title: "Export CSV", desc: "Download full history as a spreadsheet for deeper analysis.", color: "#f97316" },
+      ]}
+      tip="Stats persist between sessions. Clear History removes response data but keeps judge history."
+    />
+  );
+
   if (!history.length && !judgeHistory.length) return <div className="text-sm text-gray-400 text-center py-8">No data yet!</div>;
 
   return (
     <div className="space-y-4">
+      {statsGuide}
       {/* Section tabs */}
       <div className="flex gap-2">
         <button data-testid="stats-response-history-btn" onClick={() => setActiveSection('responses')} className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${activeSection === 'responses' ? 'btn-primary' : 'btn-ghost'}`}>
@@ -150,9 +164,24 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
               const maxCount = Math.max(...models.map(m => byModel[m].length));
               const barH = 22;
               const gap = 8;
-              const labelW = 110;
-              const chartW = 340;
+              const labelW = 150;
+              const chartW = 280;
               const svgH = models.length * (barH + gap) + 20;
+
+              // Short name for chart labels
+              const getChartLabel = (m: string): string => {
+                if (m.includes('/')) {
+                  // OpenRouter: "google/gemini-2.5-pro" → "gemini-2.5-pro"
+                  return m.split('/')[1].replace('deepseek-', 'DS-');
+                }
+                // Standard: take first 2 parts max
+                const parts = m.split('-');
+                if (parts[0] === 'claude') return `${parts[0]}-${parts[1]}`;
+                if (parts[0] === 'gemini') return `${parts[0]}-${parts[1]}`;
+                if (parts[0] === 'llama')  return `${parts[0]}-${parts[1]}`;
+                if (parts[0] === 'gpt')    return `${parts[0]}-${parts[1]}`;
+                return parts.slice(0, 2).join('-');
+              };
 
               const modelColor = (m: string) =>
                 m.startsWith('gpt') ? '#10b981'
@@ -176,7 +205,7 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
                         const shortName = m.includes('/') ? m.split('/')[1].replace('deepseek-','DS-') : m.split('-').slice(0,2).join('-');
                         return (
                           <g key={m}>
-                            <text x={labelW - 4} y={y + barH/2 + 4} textAnchor="end" fontSize="10" fill="var(--color-text-secondary)">{shortName}</text>
+                            <text x={labelW - 4} y={y + barH/2 + 4} textAnchor="end" fontSize="10" fill="#c0c0e0">{shortName}</text>
                             <rect x={labelW} y={y} width={Math.max(w, 2)} height={barH} rx="4" fill={modelColor(m)} opacity="0.8"/>
                             <text x={labelW + w + 4} y={y + barH/2 + 4} fontSize="10" fill="var(--color-text-secondary)">
                               {val ? `${val}ms ${maxTime > 0 ? `(${Math.round((val/maxTime)*100)}%)` : ''}` : '—'}
@@ -203,9 +232,9 @@ export function StatsPanel({ history, onClearHistory }: { history: HistoryEntry[
                         const wr = scored.length > 0 ? Math.round((byModel[m].filter(e => e.score === 'up').length / scored.length) * 100) : null;
                         return (
                           <g key={m}>
-                            <text x={labelW - 4} y={y + barH/2 + 4} textAnchor="end" fontSize="10" fill="var(--color-text-secondary)">{shortName}</text>
+                            <text x={labelW - 4} y={y + barH/2 + 4} textAnchor="end" fontSize="10" fill="#c0c0e0">{shortName}</text>
                             <rect x={labelW} y={y} width={Math.max(w, 2)} height={barH} rx="4" fill={modelColor(m)} opacity="0.8"/>
-                            <text x={labelW + w + 4} y={y + barH/2 + 4} fontSize="10" fill="var(--color-text-secondary)">
+                            <text x={labelW + w + 4} y={y + barH/2 + 4} fontSize="10" fill="#a0a0c0">
                               {val} {val === 1 ? 'response' : 'responses'}{wr !== null ? ` · ${wr}% 👍` : ''}
                             </text>
                           </g>

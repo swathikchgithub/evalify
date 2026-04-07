@@ -224,31 +224,53 @@ describe('Analytics charts — model color coding', () => {
 
 describe('Analytics charts — short model name display', () => {
 
-  function shortName(m: string): string {
-    if (m.includes('/'))
+  // Mirrors getChartLabel() in StatsPanel.tsx
+  function getChartLabel(m: string): string {
+    if (m.includes('/')) {
       return m.split('/')[1].replace('deepseek-', 'DS-');
-    return m.split('-').slice(0, 2).join('-');
+    }
+    const parts = m.split('-');
+    if (parts[0] === 'claude') return `${parts[0]}-${parts[1]}`;
+    if (parts[0] === 'gemini') return `${parts[0]}-${parts[1]}`;
+    if (parts[0] === 'llama')  return `${parts[0]}-${parts[1]}`;
+    if (parts[0] === 'gpt')    return `${parts[0]}-${parts[1]}`;
+    return parts.slice(0, 2).join('-');
   }
 
-  it('truncates OpenAI model to 2 parts', () => {
-    expect(shortName('gpt-4o-mini')).toBe('gpt-4o');
+  it('truncates OpenAI model correctly', () => {
+    expect(getChartLabel('gpt-4o-mini')).toBe('gpt-4o');
+    expect(getChartLabel('gpt-4o')).toBe('gpt-4o');
   });
 
-  it('truncates Anthropic model to 2 parts', () => {
-    expect(shortName('claude-haiku-4-5-20251001')).toBe('claude-haiku');
+  it('truncates Anthropic model correctly', () => {
+    expect(getChartLabel('claude-haiku-4-5-20251001')).toBe('claude-haiku');
+    expect(getChartLabel('claude-sonnet-4-6')).toBe('claude-sonnet');
   });
 
-  it('truncates Groq model to 2 parts', () => {
-    expect(shortName('llama-3.3-70b-versatile')).toBe('llama-3.3');
+  it('truncates Groq Llama model with version number', () => {
+    expect(getChartLabel('llama-3.3-70b-versatile')).toBe('llama-3.3');
   });
 
-  it('shows DS- prefix for DeepSeek', () => {
-    expect(shortName('deepseek/deepseek-chat')).toBe('DS-chat');
-    expect(shortName('deepseek/deepseek-r1')).toBe('DS-r1');
+  it('truncates Google Gemini model correctly', () => {
+    expect(getChartLabel('gemini-2.5-flash')).toBe('gemini-2.5');
+    expect(getChartLabel('gemini-2.5-flash-lite')).toBe('gemini-2.5');
   });
 
-  it('shows model part for other OpenRouter models', () => {
-    expect(shortName('meta-llama/llama-4-maverick')).toBe('llama-4-maverick');
+  it('shows DS- prefix for DeepSeek via OpenRouter', () => {
+    expect(getChartLabel('deepseek/deepseek-chat')).toBe('DS-chat');
+    expect(getChartLabel('deepseek/deepseek-r1')).toBe('DS-r1');
+  });
+
+  it('handles OpenRouter full path — removes provider prefix', () => {
+    expect(getChartLabel('google/gemini-2.5-pro')).toBe('gemini-2.5-pro');
+    expect(getChartLabel('meta-llama/llama-4-maverick')).toBe('llama-4-maverick');
+  });
+
+  it('this was the bug — google/gemini-2.5-pro was showing as google/gem (cut off)', () => {
+    // Before fix: m.split('-').slice(0,2) → ['google/gemini', '2'] → 'google/gemini-2'
+    // After fix: m.includes('/') → m.split('/')[1] → 'gemini-2.5-pro'
+    expect(getChartLabel('google/gemini-2.5-pro')).not.toContain('google/');
+    expect(getChartLabel('google/gemini-2.5-pro')).toBe('gemini-2.5-pro');
   });
 
 });
