@@ -150,6 +150,10 @@ export function groupByPrompt<T extends { question: string }>(
 export const KNOWN_JUDGE_MODELS = [
   { value: 'deepseek/deepseek-chat', label: '🐋 DeepSeek V3 (OpenRouter)', description: 'Fast & cheap' },
   { value: 'deepseek/deepseek-r1',   label: '🧠 DeepSeek R1 (OpenRouter)', description: 'Reasoning model' },
+  { value: 'openai/gpt-oss-120b:free', label: '🔓 GPT-OSS 120B',             description: 'Free, o4-mini level' },
+  { value: 'openai/gpt-oss-20b:free',  label: '🔓 GPT-OSS 20B',              description: 'Free, fast' },
+  { value: 'google/gemma-4-31b-it',    label: '💎 Gemma 4 31B',              description: 'Google open-source' },
+  { value: 'google/gemma-4-26b-a4b-it',label: '💎 Gemma 4 26B MoE',         description: 'Efficient MoE' },
   { value: 'gpt-4o-mini',            label: '⚡ GPT-4o Mini',              description: 'Fast & cheap' },
   { value: 'gpt-4o',                 label: '🎯 GPT-4o',                   description: 'OpenAI — most accurate' },
   { value: 'claude-sonnet-4-6',      label: '🧠 Claude Sonnet',            description: 'Anthropic — nuanced' },

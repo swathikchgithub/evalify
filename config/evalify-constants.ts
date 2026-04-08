@@ -17,6 +17,10 @@ export const MODELS = [
   { value: 'deepseek/deepseek-r1',         label: 'DeepSeek R1 Reasoner (OpenRouter)' },
   { value: 'meta-llama/llama-4-maverick',  label: 'Llama 4 Maverick (OpenRouter)'     },
   { value: 'google/gemini-2.5-pro',        label: 'Gemini 2.5 Pro (OpenRouter)'       },
+  { value: 'openai/gpt-oss-120b:free',     label: 'GPT-OSS 120B (OpenRouter)'         },
+  { value: 'openai/gpt-oss-20b:free',      label: 'GPT-OSS 20B (OpenRouter)'          },
+  { value: 'google/gemma-4-31b-it',        label: 'Gemma 4 31B (OpenRouter)'          },
+  { value: 'google/gemma-4-26b-a4b-it',    label: 'Gemma 4 26B MoE (OpenRouter)'      },
 ];
 
 export const DEFAULT_PANEL_MODELS = {
@@ -35,6 +39,8 @@ export const JUDGE_MODELS = [
   { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B — Open source',      badge: '🦙' },
   { value: 'deepseek/deepseek-chat',    label: 'DeepSeek V3 — Fast & cheap',        badge: '🐋' },
   { value: 'deepseek/deepseek-r1',      label: 'DeepSeek R1 — Reasoning',           badge: '🧠' },
+  { value: 'openai/gpt-oss-120b:free',  label: 'GPT-OSS 120B — Free & powerful',    badge: '🔓' },
+  { value: 'google/gemma-4-31b-it',     label: 'Gemma 4 31B — Open source',         badge: '💎' },
   { value: 'custom',                    label: 'Custom Endpoint — Your own model',   badge: '🔌' },
 ];
 
@@ -59,6 +65,10 @@ export const MODEL_PRICING: Record<string, { input: number; output: number }> = 
   'gemini-2.5-flash-lite':          { input: 0.00000005,   output: 0.0000002    },
   'deepseek/deepseek-chat':         { input: 0.00000028,   output: 0.00000042   },
   'deepseek/deepseek-r1':           { input: 0.00000055,   output: 0.00000219   },
+  'openai/gpt-oss-120b:free':        { input: 0,             output: 0             },
+  'openai/gpt-oss-20b:free':         { input: 0,             output: 0             },
+  'google/gemma-4-31b-it':           { input: 0.00000014,    output: 0.00000040    },
+  'google/gemma-4-26b-a4b-it':       { input: 0.00000013,    output: 0.00000040    },
   'meta-llama/llama-4-maverick':    { input: 0.0000004,    output: 0.0000004    },
   'google/gemini-2.5-pro':          { input: 0.00000125,   output: 0.00001      },
 };

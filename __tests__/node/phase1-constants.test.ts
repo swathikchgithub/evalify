@@ -139,9 +139,16 @@ describe('config/evalify-constants.ts — MODEL_PRICING', () => {
   });
 
   it('all pricing has input and output rates', () => {
+    const FREE_MODELS = ['openai/gpt-oss-120b:free', 'openai/gpt-oss-20b:free'];
     for (const [model, price] of Object.entries(MODEL_PRICING)) {
-      expect(price.input).toBeGreaterThan(0);
-      expect(price.output).toBeGreaterThan(0);
+      // Free models (GPT-OSS) have $0 pricing — that's valid
+      if (FREE_MODELS.includes(model)) {
+        expect(price.input).toBeGreaterThanOrEqual(0);
+        expect(price.output).toBeGreaterThanOrEqual(0);
+      } else {
+        expect(price.input).toBeGreaterThan(0);
+        expect(price.output).toBeGreaterThan(0);
+      }
     }
   });
 
@@ -349,6 +356,76 @@ describe('Phase 2 — import contract (everything page.tsx needs)', () => {
   it('storage keys unchanged after extraction', () => {
     expect(STORAGE_KEY_QUERIES).toBe('evalify-recent-queries');
     expect(STORAGE_KEY_CONFIGS).toBe('evalify-saved-configs');
+  });
+
+});
+
+describe('New models — GPT-OSS and Gemma 4', () => {
+
+  it('GPT-OSS 120B is in MODELS list', () => {
+    expect(MODELS.find(m => m.value === 'openai/gpt-oss-120b:free')).toBeDefined();
+  });
+
+  it('GPT-OSS 20B is in MODELS list', () => {
+    expect(MODELS.find(m => m.value === 'openai/gpt-oss-20b:free')).toBeDefined();
+  });
+
+  it('Gemma 4 31B is in MODELS list', () => {
+    expect(MODELS.find(m => m.value === 'google/gemma-4-31b-it')).toBeDefined();
+  });
+
+  it('Gemma 4 26B MoE is in MODELS list', () => {
+    expect(MODELS.find(m => m.value === 'google/gemma-4-26b-a4b-it')).toBeDefined();
+  });
+
+  it('GPT-OSS 120B is in JUDGE_MODELS', () => {
+    expect(JUDGE_MODELS.find(m => m.value === 'openai/gpt-oss-120b:free')).toBeDefined();
+  });
+
+  it('Gemma 4 31B is in JUDGE_MODELS', () => {
+    expect(JUDGE_MODELS.find(m => m.value === 'google/gemma-4-31b-it')).toBeDefined();
+  });
+
+  it('GPT-OSS models have free pricing ($0)', () => {
+    expect(MODEL_PRICING['openai/gpt-oss-120b:free'].input).toBe(0);
+    expect(MODEL_PRICING['openai/gpt-oss-120b:free'].output).toBe(0);
+    expect(MODEL_PRICING['openai/gpt-oss-20b:free'].input).toBe(0);
+    expect(MODEL_PRICING['openai/gpt-oss-20b:free'].output).toBe(0);
+  });
+
+  it('Gemma 4 models have valid pricing', () => {
+    expect(MODEL_PRICING['google/gemma-4-31b-it'].input).toBeGreaterThan(0);
+    expect(MODEL_PRICING['google/gemma-4-31b-it'].output).toBeGreaterThan(0);
+    expect(MODEL_PRICING['google/gemma-4-26b-a4b-it'].input).toBeGreaterThan(0);
+    expect(MODEL_PRICING['google/gemma-4-26b-a4b-it'].output).toBeGreaterThan(0);
+  });
+
+  it('new models route via OpenRouter (contain /)', () => {
+    const newModels = [
+      'openai/gpt-oss-120b:free',
+      'openai/gpt-oss-20b:free',
+      'google/gemma-4-31b-it',
+      'google/gemma-4-26b-a4b-it',
+    ];
+    newModels.forEach(m => {
+      expect(m.includes('/')).toBe(true); // all route via OpenRouter
+    });
+  });
+
+  it('GPT-OSS labels mention OpenRouter', () => {
+    const model = MODELS.find(m => m.value === 'openai/gpt-oss-120b:free');
+    expect(model?.label).toContain('OpenRouter');
+  });
+
+  it('Gemma 4 labels mention OpenRouter', () => {
+    const model = MODELS.find(m => m.value === 'google/gemma-4-31b-it');
+    expect(model?.label).toContain('OpenRouter');
+  });
+
+  it('GPT-OSS 120B is cheaper than GPT-4o', () => {
+    const gptOss = MODEL_PRICING['openai/gpt-oss-120b:free'];
+    const gpt4o  = MODEL_PRICING['gpt-4o'];
+    expect(gptOss.input).toBeLessThan(gpt4o.input);
   });
 
 });
