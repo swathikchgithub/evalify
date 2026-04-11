@@ -97,7 +97,7 @@ export function ChatPanel({ panelId, sharedInput, submitTrigger, onMetric, onSco
   onModelChange?: (panelId: string, model: string) => void;
 }) {
 
-  const [model, setModel] = useState(DEFAULT_PANEL_MODELS[panelId as keyof typeof DEFAULT_PANEL_MODELS] ?? 'gpt-4o-mini');
+  const [model, setModel] = useState<string>(DEFAULT_PANEL_MODELS[panelId as keyof typeof DEFAULT_PANEL_MODELS] ?? 'gpt-4o-mini');
 
   // Notify parent of model changes so panel selector can show real names
   const handleModelChange = (newModel: string) => {
