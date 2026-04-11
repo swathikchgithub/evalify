@@ -2,9 +2,7 @@
 // Single Responsibility: KServe v2 model presets only.
 // Open/Closed: add a new preset by appending to the array.
 
-export const KSERVE_PRESETS = [
-
-];
+export const KSERVE_PRESETS: { label: string; model: string; template: string; description: string; outputField: string }[] = [];
 
 // ── Evaluation criteria presets ───────────────────────────────
 export const EVAL_CRITERIA_PRESETS = [
