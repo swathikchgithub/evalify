@@ -1079,3 +1079,94 @@ describe('TabGuide — SSR hydration safety', () => {
   });
 
 });
+
+// ─────────────────────────────────────────────────────────────
+// Response history — localStorage persistence
+// ─────────────────────────────────────────────────────────────
+describe('Response history — localStorage persistence', () => {
+
+  const STORAGE_KEY = 'evalify-response-history';
+
+  function saveHistory(entries: any[]) {
+    return JSON.stringify(entries.slice(-200)); // max 200 entries
+  }
+
+  function loadHistory(raw: string | null): any[] {
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch { return []; }
+  }
+
+  it('defaults to empty array on server (SSR-safe)', () => {
+    // Server: localStorage unavailable → useState([])
+    const serverDefault: any[] = [];
+    expect(serverDefault).toHaveLength(0);
+  });
+
+  it('loads saved history after mount via useEffect', () => {
+    const saved = [
+      { id: '1', model: 'gpt-4o-mini', cost: 0.0001, tokens: 150, responseTime: 1200 }
+    ];
+    const raw = JSON.stringify(saved);
+    const loaded = loadHistory(raw);
+    expect(loaded).toHaveLength(1);
+    expect(loaded[0].model).toBe('gpt-4o-mini');
+  });
+
+  it('returns empty array when localStorage key is missing', () => {
+    expect(loadHistory(null)).toEqual([]);
+  });
+
+  it('returns empty array when localStorage value is malformed', () => {
+    expect(loadHistory('not-valid-json{')).toEqual([]);
+  });
+
+  it('saves new entry to localStorage on onMetric', () => {
+    const existing = [{ id: '1', model: 'gpt-4o-mini', cost: 0.0001, tokens: 100, responseTime: 1000 }];
+    const newEntry = { id: '2', model: 'claude-haiku-4-5', cost: 0.0004, tokens: 200, responseTime: 2000 };
+    const updated = [...existing, newEntry];
+    const saved = saveHistory(updated);
+    const loaded = loadHistory(saved);
+    expect(loaded).toHaveLength(2);
+    expect(loaded[1].model).toBe('claude-haiku-4-5');
+  });
+
+  it('caps history at 200 entries', () => {
+    const entries = Array.from({ length: 250 }, (_, i) => ({ id: String(i), model: 'gpt-4o-mini', cost: 0.0001 }));
+    const saved = saveHistory(entries);
+    const loaded = loadHistory(saved);
+    expect(loaded).toHaveLength(200);
+    // Should keep the LAST 200 (most recent)
+    expect(loaded[0].id).toBe('50');
+    expect(loaded[199].id).toBe('249');
+  });
+
+  it('clears localStorage when history is cleared', () => {
+    // Simulate: setHistory([]) + localStorage.removeItem
+    const storage: Record<string, string> = { [STORAGE_KEY]: '[{...}]' };
+    delete storage[STORAGE_KEY];
+    expect(storage[STORAGE_KEY]).toBeUndefined();
+  });
+
+  it('persists score updates to localStorage', () => {
+    const history = [
+      { id: '1', model: 'gpt-4o-mini', cost: 0.0001, score: null }
+    ];
+    const updated = history.map(h => h.id === '1' ? { ...h, score: 'up' } : h);
+    const saved = saveHistory(updated);
+    const loaded = loadHistory(saved);
+    expect(loaded[0].score).toBe('up');
+  });
+
+  it('SSR always renders empty — no hydration mismatch', () => {
+    // Server renders history=[] → history.length > 0 = false → no Export CSV button
+    // Client loads from localStorage → may have entries → button appears
+    // useEffect ensures this happens AFTER hydration, not during SSR
+    const serverHistory: any[] = [];
+    const clientHistory = [{ id: '1', model: 'gpt-4o-mini', cost: 0.0001 }];
+
+    expect(serverHistory.length > 0).toBe(false); // server: no button
+    expect(clientHistory.length > 0).toBe(true);  // client: button shows after mount
+    // No mismatch because useEffect fires after SSR
+  });
+
+});

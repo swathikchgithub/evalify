@@ -76,4 +76,4 @@ export interface JudgeResult {
 }
 
 // ── Tab Navigation ────────────────────────────────────────────
-export type ActiveTab = 'compare' | 'openai' | 'kserve' | 'judge' | 'stats';
+export type ActiveTab = 'compare' | 'openai' | 'kserve' | 'judge' | 'stats' | 'costs' | 'tokenizer';

@@ -10,14 +10,24 @@ import { ChatPanel }           from './components/ChatPanel';
 import { CustomEndpointTab }   from './components/CustomEndpointTab';
 import { KServeTab }           from './components/KServeTab';
 import { StatsPanel }          from './components/StatsPanel';
+import { CostDashboard }       from './components/CostDashboard';
 import { JudgeTab }            from './components/JudgeTab';
 import { QueryInput }          from './components/QueryInput';
+import TokenizerTab from './components/TokenizerTab';
 
 export default function Home() {
   const [activeTab, setActiveTab]               = useState<ActiveTab>('compare');
   const [input, setInput]                       = useState('');
   const [submitTrigger, setSubmitTrigger]       = useState(0);
-  const [history, setHistory]                   = useState<HistoryEntry[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  // Load persisted response history after mount (SSR-safe)
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('evalify-response-history') || '[]');
+      if (saved.length > 0) setHistory(saved);
+    } catch {}
+  }, []);
   const [modelStatuses, setModelStatuses]       = useState<Record<string, ModelStatus>>({});
   const [pool, setPool]                         = useState<PoolEntry[]>([]);
   const [broadcastTrigger, setBroadcastTrigger] = useState(0);
@@ -39,8 +49,16 @@ export default function Home() {
   const togglePanel = (id: string) =>
     setActivePanels(prev => ({ ...prev, [id]: !prev[id] }));
 
-  const onMetric         = (e: HistoryEntry) => setHistory(prev => [...prev, e]);
-  const onScore          = (id: string, s: 'up' | 'down') => setHistory(prev => prev.map(h => h.id === id ? { ...h, score: s } : h));
+  const onMetric = (e: HistoryEntry) => setHistory(prev => {
+    const updated = [...prev, e];
+    try { localStorage.setItem('evalify-response-history', JSON.stringify(updated.slice(-200))); } catch {}
+    return updated;
+  });
+  const onScore = (id: string, s: 'up' | 'down') => setHistory(prev => {
+    const updated = prev.map(h => h.id === id ? { ...h, score: s } : h);
+    try { localStorage.setItem('evalify-response-history', JSON.stringify(updated)); } catch {}
+    return updated;
+  });
   const onModelStatus    = (model: string, status: ModelStatus) => setModelStatuses(prev => ({ ...prev, [model]: status }));
   const onAddToPool      = useCallback((e: PoolEntry) => setPool(prev => [...prev, e]), []);
   const onRemoveFromPool = useCallback((id: string) => setPool(prev => prev.filter(p => p.id !== id)), []);
@@ -145,12 +163,20 @@ export default function Home() {
                 style={{background:"rgba(245,158,11,0.15)",color:"var(--judge)"}}>{pool.length}</span>
             )}
           </button>
+          <button onClick={() => setActiveTab('costs')} className="tab"
+            style={activeTab==='costs' ? {color:"#10b981",borderBottomColor:"#10b981",fontWeight:700,background:"rgba(16,185,129,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            💰 Costs
+          </button>
           <button onClick={() => setActiveTab('stats')} className="tab"
             style={activeTab==='stats' ? {color:"var(--accent)",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
             📊 Stats {history.length > 0 && (
               <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full font-mono"
                 style={{background:"rgba(99,102,241,0.15)",color:"var(--accent)"}}>{history.length}</span>
             )}
+          </button>
+          <button onClick={() => setActiveTab('tokenizer')} className="tab"
+            style={activeTab==='tokenizer' ? {color:"var(--tokenizer)",borderBottomColor:"var(--tokenizer)",fontWeight:700,background:"rgba(16,185,129,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            🔤 Tokenizer
           </button>
         </div>
 
@@ -269,6 +295,15 @@ export default function Home() {
         </div>
 
         {/* ── Stats tab ───────────────────────────────────────── */}
+        {activeTab === 'costs' && <div>
+          <CostDashboard />
+        </div>}
+        
+        {/* ── Tokenizer tab ──────────────────────────────────── */}
+        <div style={{display: activeTab === 'tokenizer' ? 'block' : 'none'}}>
+        <TokenizerTab />
+        </div>
+
         {activeTab === 'stats' && <div>
           <div className="glass-dark rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
@@ -280,7 +315,7 @@ export default function Home() {
                 </button>
               )}
             </div>
-            <StatsPanel history={history} onClearHistory={() => setHistory([])} />
+            <StatsPanel history={history} onClearHistory={() => { setHistory([]); try { localStorage.removeItem('evalify-response-history'); } catch {} }} />
           </div>
         </div>}
 
