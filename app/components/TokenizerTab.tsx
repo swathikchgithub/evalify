@@ -17,14 +17,14 @@ interface TokenizeResult {
 
 // ─── Dark-mode token palette ──────────────────────────────────────────────────
 const PALETTE = [
-  { bg: "rgba(59,130,246,0.18)",  text: "#93c5fd" },
-  { bg: "rgba(16,185,129,0.18)",  text: "#6ee7b7" },
-  { bg: "rgba(245,158,11,0.18)",  text: "#fcd34d" },
-  { bg: "rgba(236,72,153,0.18)",  text: "#f9a8d4" },
-  { bg: "rgba(139,92,246,0.18)",  text: "#c4b5fd" },
-  { bg: "rgba(249,115,22,0.18)",  text: "#fdba74" },
-  { bg: "rgba(20,184,166,0.18)",  text: "#5eead4" },
-  { bg: "rgba(239,68,68,0.18)",   text: "#fca5a5" },
+  { bg: "rgba(59,130,246,0.18)", text: "#93c5fd" },
+  { bg: "rgba(16,185,129,0.18)", text: "#6ee7b7" },
+  { bg: "rgba(245,158,11,0.18)", text: "#fcd34d" },
+  { bg: "rgba(236,72,153,0.18)", text: "#f9a8d4" },
+  { bg: "rgba(139,92,246,0.18)", text: "#c4b5fd" },
+  { bg: "rgba(249,115,22,0.18)", text: "#fdba74" },
+  { bg: "rgba(20,184,166,0.18)", text: "#5eead4" },
+  { bg: "rgba(239,68,68,0.18)", text: "#fca5a5" },
 ];
 
 const PROVIDER_DOT: Record<string, string> = {
@@ -33,19 +33,19 @@ const PROVIDER_DOT: Record<string, string> = {
 };
 
 const SAMPLES = [
-  { label: "Short greeting",       text: "Hello! How are you doing today?" },
-  { label: "System prompt",        text: "You are a helpful assistant. Always respond concisely and accurately. When uncertain, say so. Do not hallucinate facts." },
-  { label: "Code snippet",         text: "function fibonacci(n) {\n  if (n <= 1) return n;\n  return fibonacci(n - 1) + fibonacci(n - 2);\n}" },
-  { label: "Long paragraph",       text: "Large language models are trained on vast corpora of text data and learn to predict the next token in a sequence. Through this process, they develop rich internal representations of language, knowledge, and reasoning patterns that can be applied to a wide variety of downstream tasks." },
+  { label: "Short greeting", text: "Hello! How are you doing today?" },
+  { label: "System prompt", text: "You are a helpful assistant. Always respond concisely and accurately. When uncertain, say so. Do not hallucinate facts." },
+  { label: "Code snippet", text: "function fibonacci(n) {\n  if (n <= 1) return n;\n  return fibonacci(n - 1) + fibonacci(n - 2);\n}" },
+  { label: "Long paragraph", text: "Large language models are trained on vast corpora of text data and learn to predict the next token in a sequence. Through this process, they develop rich internal representations of language, knowledge, and reasoning patterns that can be applied to a wide variety of downstream tasks." },
 ];
 
 export default function TokenizerTab() {
-  const [text, setText]               = useState("");
-  const [result, setResult]           = useState<TokenizeResult | null>(null);
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState<string | null>(null);
-  const [hoveredIdx, setHoveredIdx]   = useState<number | null>(null);
-  const [viewMode, setViewMode]       = useState<"highlight" | "chips">("highlight");
+  const [text, setText] = useState("");
+  const [result, setResult] = useState<TokenizeResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<"highlight" | "chips">("highlight");
 
   const analyze = useCallback(async () => {
     if (!text.trim()) return;
@@ -142,9 +142,9 @@ export default function TokenizerTab() {
             style={{ background: "var(--openai)", color: "#fff" }}>
             {loading
               ? <span className="flex items-center gap-2">
-                  <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Analyzing…
-                </span>
+                <span className="inline-block w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Analyzing…
+              </span>
               : "Analyze Tokens"}
           </button>
         </div>
@@ -168,9 +168,9 @@ export default function TokenizerTab() {
             {/* Stats pills */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "GPT Tokens",  value: result.tokens.length, icon: "🔤" },
-                { label: "Characters",  value: result.charCount.toLocaleString(), icon: "📝" },
-                { label: "Words",       value: result.wordCount.toLocaleString(), icon: "📖" },
+                { label: "GPT Tokens", value: result.tokens.length, icon: "🔤" },
+                { label: "Characters", value: result.charCount.toLocaleString(), icon: "📝" },
+                { label: "Words", value: result.wordCount.toLocaleString(), icon: "📖" },
               ].map(s => (
                 <div key={s.label} className="rounded-xl p-4 text-center"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -275,7 +275,7 @@ export default function TokenizerTab() {
               </div>
             </div>
 
-            <div className="divide-y" style={{ divideColor: "rgba(255,255,255,0.04)" }}>
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
               {result.models.map(m => (
                 <div key={`${m.provider}-${m.name}`} className="px-4 py-3">
                   <div className="flex items-start justify-between gap-2">
