@@ -58,7 +58,7 @@ export interface PoolEntry {
   model: string;
   content: string;
   prompt: string;
-  tab: 'compare' | 'openai' | 'kserve' | 'history';
+  tab: 'compare' | 'history';
   timestamp: string;
 }
 
@@ -76,4 +76,4 @@ export interface JudgeResult {
 }
 
 // ── Tab Navigation ────────────────────────────────────────────
-export type ActiveTab = 'compare' | 'openai' | 'kserve' | 'judge' | 'stats' | 'costs' | 'tokenizer';
+export type ActiveTab = 'compare' | 'judge' | 'stats' | 'costs' | 'tokenizer';

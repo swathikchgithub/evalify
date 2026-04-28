@@ -6,9 +6,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ModelStatus, PanelMetrics, HistoryEntry, KeyValuePair, SavedConfig, PoolEntry, JudgeResult, ActiveTab } from '../../types/evalify-types';
 import { MODELS, JUDGE_MODELS, KNOWN_CUSTOM_MODELS, MODEL_PRICING, DEFAULT_COMPLEXITY, COMPLEXITY_LABELS, COMPLEXITY_MAP, PROMPT_PRESETS, STORAGE_KEY_QUERIES, STORAGE_KEY_CONFIGS, MAX_RECENT_QUERIES, DEFAULT_PANEL_MODELS } from '../../config/evalify-constants';
-import { KSERVE_PRESETS, EVAL_CRITERIA_PRESETS } from '../../config/evalify-kserve-presets';
-import { CUSTOM_ENDPOINTS, KSERVE_ENDPOINTS } from '../../config/endpoints';
-import type { EndpointConfig, KServeEndpointConfig } from '../../config/endpoints';
 
 
 const DEBUG = false;
@@ -207,53 +204,6 @@ export function PromptEditor({ complexity, customPrompt, isCustomPrompt, onCusto
   );
 }
 
-
-// ── Team Endpoint Picker ──────────────────────────────────────
-export function TeamEndpointPicker({ type, onLoad }: {
-  type: 'custom' | 'kserve';
-  onLoad: (cfg: any) => void;
-}) {
-  const [endpoints, setEndpoints] = useState<any[]>([]);
-  const [loading, setLoading]     = useState(true);
-
-  useEffect(() => {
-    fetch('/api/endpoints')
-      .then(r => r.json())
-      .then(data => {
-        setEndpoints(type === 'custom' ? data.customEndpoints : data.kserveEndpoints);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [type]);
-
-  if (loading) return null;
-  if (!endpoints || endpoints.length === 0) return null;
-
-  return (
-    <div>
-      <label className="text-[10px] font-medium uppercase tracking-widest block mb-1" style={{color:"var(--text-muted)"}}>
-        🏢 Team Endpoints
-      </label>
-      <select
-        defaultValue=""
-        onChange={e => {
-          if (!e.target.value) return;
-          const cfg = endpoints.find(ep => ep.name === e.target.value);
-          if (cfg) onLoad(cfg);
-          e.target.value = '';
-        }}
-        className="w-full border rounded-lg p-1.5 text-xs bg-white border-blue-200"
-      >
-        <option value="">Load a team endpoint...</option>
-        {endpoints.map(ep => (
-          <option key={ep.name} value={ep.name}>
-            {ep.name} {ep.description ? `— ${ep.description}` : ''}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 // ── Tab Guide Component ──────────────────────────────────────
 // Reusable how-to guide for all tabs

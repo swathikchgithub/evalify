@@ -2,13 +2,9 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import type { ModelStatus, HistoryEntry, PoolEntry, ActiveTab } from '../types/evalify-types';
-import { STORAGE_KEY_CONFIGS, MAX_RECENT_QUERIES } from '../config/evalify-constants';
-import { KSERVE_PRESETS } from '../config/evalify-kserve-presets';
-
+import { STORAGE_KEY_CONFIGS, MAX_RECENT_QUERIES, DEFAULT_PANEL_MODELS } from '../config/evalify-constants';
 import { AddToPoolButton, saveRecentQuery, loadJudgeHistory, TabGuide } from './components/shared';
 import { ChatPanel }           from './components/ChatPanel';
-import { CustomEndpointTab }   from './components/CustomEndpointTab';
-import { KServeTab }           from './components/KServeTab';
 import { StatsPanel }          from './components/StatsPanel';
 import { CostDashboard }       from './components/CostDashboard';
 import { JudgeTab }            from './components/JudgeTab';
@@ -30,16 +26,11 @@ export default function Home() {
   }, []);
   const [modelStatuses, setModelStatuses]       = useState<Record<string, ModelStatus>>({});
   const [pool, setPool]                         = useState<PoolEntry[]>([]);
-  const [broadcastTrigger, setBroadcastTrigger] = useState(0);
-  const [broadcastInput, setBroadcastInput]     = useState('');
   const [clearAllTrigger, setClearAllTrigger]   = useState(0);
   const clearFnsRef   = useRef<Record<string, () => void>>({});
   const registerClear = useCallback((id: string, fn: () => void) => { clearFnsRef.current[id] = fn; }, []);
   const lastInput     = useRef('');
-  const [panelModels, setPanelModels] = useState<Record<string, string>>({
-    A: 'gpt-4o-mini', B: 'claude-haiku-4-5-20251001',
-    C: 'llama-3.3-70b-versatile', D: 'gemini-2.5-flash',
-  });
+  const [panelModels, setPanelModels] = useState<Record<string, string>>({ ...DEFAULT_PANEL_MODELS });
   const onModelChange = useCallback((panelId: string, model: string) => {
     setPanelModels(prev => ({ ...prev, [panelId]: model }));
   }, []);
@@ -102,8 +93,6 @@ export default function Home() {
             <h1 className="font-display text-2xl sm:text-4xl font-bold gradient-text tracking-tight">⚡ Evalify</h1>
             <p className="text-sm mt-2 flex items-center gap-2" style={{color:'var(--text-muted)'}}>
               <span className="badge-openai   text-[10px] px-2 py-0.5 rounded-full">Compare LLMs</span>
-              <span className="badge-custom   text-[10px] px-2 py-0.5 rounded-full">Custom Endpoints</span>
-              <span className="badge-kserve   text-[10px] px-2 py-0.5 rounded-full">KServe v2</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full" style={{background:"rgba(245,158,11,0.1)",color:"#f59e0b",border:"1px solid rgba(245,158,11,0.2)"}}>⚖️ BYOJ Judge</span>
             </p>
           </div>
@@ -147,14 +136,6 @@ export default function Home() {
           <button onClick={() => setActiveTab('compare')} className="tab"
             style={activeTab==='compare' ? {color:"#fff",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
             ⚡ Compare Models
-          </button>
-          <button onClick={() => setActiveTab('openai')} className="tab"
-            style={activeTab==='openai' ? {color:"#fff",borderBottomColor:"var(--accent)",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
-            🔌 Custom Endpoint
-          </button>
-          <button onClick={() => setActiveTab('kserve')} className="tab"
-            style={activeTab==='kserve' ? {color:"#fff",borderBottomColor:"var(--kserve)",fontWeight:700,background:"rgba(236,72,153,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
-            🧬 KServe v2 <span className="ml-1 text-[10px] badge-kserve px-1.5 py-0.5 rounded-full font-mono">{KSERVE_PRESETS.length}</span>
           </button>
           <button onClick={() => setActiveTab('judge')} className="tab"
             style={activeTab==='judge' ? {color:"var(--judge)",borderBottomColor:"var(--judge)",fontWeight:700,background:"rgba(245,158,11,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
@@ -213,6 +194,7 @@ export default function Home() {
             const shortName = modelName.includes('/')
               ? modelName.split('/')[1].replace('deepseek-', 'DS-').replace('-versatile','')
               : modelName.split('-').slice(0,2).join('-');
+            const panelTok = history.filter(h => h.panel === p).reduce((s, h) => s + (h.tokens ?? 0), 0);
             return (
               <button key={p} type="button"
                 onClick={() => togglePanel(p)}
@@ -224,6 +206,7 @@ export default function Home() {
                   opacity: activePanels[p] ? 1 : 0.6,
                 }}>
                 {activePanels[p] ? '✓' : '○'} {shortName}
+                {panelTok > 0 && <span className="ml-1 font-mono opacity-60">{panelTok.toLocaleString()}t</span>}
               </button>
             );
           })}
@@ -239,27 +222,17 @@ export default function Home() {
             style={{color:"#a0a0c0", borderColor:"rgba(255,255,255,0.2)", background:"rgba(255,255,255,0.06)"}}>
             None
           </button>
+          {history.some(h => h.tokens) && (
+            <span className="ml-auto text-[10px] font-mono" style={{color:"#6666aa"}}>
+              ◈ {history.reduce((s, h) => s + (h.tokens ?? 0), 0).toLocaleString()} total tokens
+            </span>
+          )}
         </div>
         <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex flex-wrap gap-2 mt-2 items-center">
             <QueryInput value={input} onChange={setInput} onSubmit={handleSubmit}
               placeholder="Ask all four panels... (Enter to submit, 💡 for samples)" />
             <button type="submit" disabled={!input.trim()} className="btn-primary px-5 py-3 text-sm whitespace-nowrap">
               Ask All
-            </button>
-            <button type="button" disabled={!input.trim()}
-              onClick={() => {
-                if (!input.trim()) return;
-                saveRecentQuery(input.trim());
-                lastInput.current = input;
-                setBroadcastInput(input);
-                setBroadcastTrigger(t => t + 1);
-                setSubmitTrigger(t => t + 1);
-                setInput('');
-              }}
-              title="Ask all panels + Custom Endpoint + KServe simultaneously"
-              className="btn-ghost px-3 py-3 text-sm whitespace-nowrap"
-              style={{borderColor:"rgba(34,211,238,0.3)",color:"var(--cyan)"}}>
-              📡 All
             </button>
             <button type="button"
               onClick={() => {
@@ -272,20 +245,6 @@ export default function Home() {
               🗑 Clear
             </button>
           </form>
-        </div>
-
-        {/* ── Custom Endpoint tab ─────────────────────────────── */}
-        <div style={{display: activeTab === 'openai' ? 'block' : 'none'}}>
-          <CustomEndpointTab onMetric={onMetric} onScore={onScore}
-            pool={pool} onAddToPool={onAddToPool} onRemoveFromPool={onRemoveFromPool}
-            broadcastInput={broadcastInput} broadcastTrigger={broadcastTrigger} />
-        </div>
-
-        {/* ── KServe tab ──────────────────────────────────────── */}
-        <div style={{display: activeTab === 'kserve' ? 'block' : 'none'}}>
-          <KServeTab onMetric={onMetric} onScore={onScore}
-            pool={pool} onAddToPool={onAddToPool} onRemoveFromPool={onRemoveFromPool}
-            broadcastInput={broadcastInput} broadcastTrigger={broadcastTrigger} />
         </div>
 
         {/* ── Judge tab ───────────────────────────────────────── */}

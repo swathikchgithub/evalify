@@ -324,16 +324,9 @@ describe('judge tab state persistence contract', () => {
   });
 
   it('only one tab is block at a time', () => {
-    const tabs = ['compare', 'openai', 'kserve', 'judge', 'stats'] as const;
+    const tabs = ['compare', 'judge', 'stats'] as const;
     for (const activeTab of tabs) {
-      const visible = tabs.filter(t => {
-        if (t === 'compare') return activeTab === 'compare';
-        if (t === 'openai')  return activeTab === 'openai';
-        if (t === 'kserve')  return activeTab === 'kserve';
-        if (t === 'judge')   return activeTab === 'judge';
-        if (t === 'stats')   return activeTab === 'stats';
-        return false;
-      });
+      const visible = tabs.filter(t => t === activeTab);
       expect(visible).toHaveLength(1);
       expect(visible[0]).toBe(activeTab);
     }
