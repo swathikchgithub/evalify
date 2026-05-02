@@ -10,6 +10,7 @@ import { CostDashboard }       from './components/CostDashboard';
 import { JudgeTab }            from './components/JudgeTab';
 import { QueryInput }          from './components/QueryInput';
 import TokenizerTab from './components/TokenizerTab';
+import { MCPTab }    from './components/MCPTab';
 
 export default function Home() {
   const [activeTab, setActiveTab]               = useState<ActiveTab>('compare');
@@ -159,6 +160,10 @@ export default function Home() {
             style={activeTab==='tokenizer' ? {color:"var(--tokenizer)",borderBottomColor:"var(--tokenizer)",fontWeight:700,background:"rgba(16,185,129,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
             🔤 Tokenizer
           </button>
+          <button onClick={() => setActiveTab('mcp')} className="tab"
+            style={activeTab==='mcp' ? {color:"#818cf8",borderBottomColor:"#818cf8",fontWeight:700,background:"rgba(99,102,241,0.12)",borderRadius:"8px 8px 0 0",padding:"8px 16px"} : {}}>
+            🔌 MCP
+          </button>
         </div>
 
         {/* ── Compare tab ────────────────────────────────────── */}
@@ -263,6 +268,9 @@ export default function Home() {
         <TokenizerTab />
         </div>
 
+        {/* ── MCP tab ─────────────────────────────────────────── */}
+        {activeTab === 'mcp' && <MCPTab />}
+
         {activeTab === 'stats' && <div>
           <div className="glass-dark rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
@@ -279,6 +287,7 @@ export default function Home() {
         </div>}
 
       </div>
+
     </main>
   );
 }
